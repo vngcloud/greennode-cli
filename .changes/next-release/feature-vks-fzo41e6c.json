@@ -1,0 +1,5 @@
+{
+  "type": "feature",
+  "category": "vks",
+  "description": "Add set-auto-upgrade-config and delete-auto-upgrade-config commands"
+}

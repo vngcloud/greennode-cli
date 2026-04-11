@@ -23,6 +23,8 @@ def _inject_vks_operations(command_table, session, **kwargs):
     from grncli.customizations.vks.update_nodegroup import UpdateNodegroupCommand
     from grncli.customizations.vks.delete_nodegroup import DeleteNodegroupCommand
     from grncli.customizations.vks.wait import WaitClusterActiveCommand
+    from grncli.customizations.vks.auto_upgrade_config import SetAutoUpgradeConfigCommand
+    from grncli.customizations.vks.auto_upgrade_config import DeleteAutoUpgradeConfigCommand
 
     command_table['list-clusters'] = ListClustersCommand(session)
     command_table['get-cluster'] = GetClusterCommand(session)
@@ -35,3 +37,5 @@ def _inject_vks_operations(command_table, session, **kwargs):
     command_table['update-nodegroup'] = UpdateNodegroupCommand(session)
     command_table['delete-nodegroup'] = DeleteNodegroupCommand(session)
     command_table['wait-cluster-active'] = WaitClusterActiveCommand(session)
+    command_table['set-auto-upgrade-config'] = SetAutoUpgradeConfigCommand(session)
+    command_table['delete-auto-upgrade-config'] = DeleteAutoUpgradeConfigCommand(session)
