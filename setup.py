@@ -37,7 +37,6 @@ setup(
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     author='Green Node',
-    author_email='support@greennode.cloud',
     url='https://github.com/vngcloud/greennode-cli',
     project_urls={
         'Documentation': 'https://github.com/vngcloud/greennode-cli#readme',
