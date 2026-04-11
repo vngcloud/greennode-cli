@@ -22,10 +22,10 @@ git commit -m "feat(vks): add describe-events command"
 git push -u origin feat/add-vks-describe-events
 ```
 
-### Phase 2: Pull Request
+### Phase 2: PR to develop (testing)
 
 ```
-5. Create PR on GitHub (feat/add-vks-describe-events → main)
+5. Create PR on GitHub (feat/add-vks-describe-events → develop)
 
 6. GitHub Actions auto-trigger:
 
@@ -43,17 +43,26 @@ git push -u origin feat/add-vks-describe-events
    ├── Python 3.13 × Ubuntu     ✅
    └── Python 3.13 × macOS      ✅
 
-7. Review + merge PR to main
+7. Review + merge PR to develop
+8. Test on develop environment
 ```
 
-### Phase 3: Release
+### Phase 3: PR to main (release-ready)
+
+```
+9. Create PR on GitHub (feat/add-vks-describe-events → main)
+   - Same CI checks run again on main
+   - Review + merge PR to main
+```
+
+### Phase 4: Release
 
 ```bash
-# 8. Checkout main
+# 10. Checkout main
 git checkout main
 git pull
 
-# 9. Bump version (e.g. 0.1.0 → 0.2.0)
+# 11. Bump version (e.g. 0.1.0 → 0.2.0)
 ./scripts/bump-version minor
 ```
 
