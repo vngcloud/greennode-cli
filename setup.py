@@ -33,7 +33,7 @@ install_requires = [
 setup(
     name='grncli',
     version=find_version('grncli', '__init__.py'),
-    description='Universal Command Line Interface for Greenode (VNG Cloud)',
+    description='Universal Command Line Interface for Green Node',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     author='Green Node',
