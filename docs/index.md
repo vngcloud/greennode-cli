@@ -1,8 +1,8 @@
-# Greenode CLI
+# GreenNode CLI
 
-Universal Command Line Interface for Green Node.
+Universal Command Line Interface for GreenNode.
 
-The Greenode CLI (`grn`) is a unified tool to manage your Green Node services from the command line. It is modeled after the AWS CLI architecture and supports hand-written commands, with VKS (VNG Kubernetes Service) as the first service.
+The GreenNode CLI (`grn`) is a unified tool to manage your GreenNode services from the command line.
 
 ## Quick Start
 

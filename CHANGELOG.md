@@ -3,12 +3,12 @@
 ## 0.1.2
 
 ### Features
-* **vks**: Green Node CLI release
+* **vks**: GreenNode CLI release
 
 ## 0.1.1
 
 ### Features
-* **vks**: Green Node CLI release
+* **vks**: GreenNode CLI release
 
 ## 0.1.0
 

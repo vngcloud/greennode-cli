@@ -8,7 +8,7 @@
 
 ## Install from PyPI
 
-The recommended way to install the Greenode CLI is to use `pip` in a `virtualenv`:
+The recommended way to install the GreenNode CLI is to use `pip` in a `virtualenv`:
 
 ```bash
 python -m pip install grncli
@@ -48,13 +48,13 @@ python -m pip install -e ".[dev]"
 
 ## Bundled installer
 
-On Linux and macOS, the Greenode CLI can be installed using a standalone installer that creates an isolated virtualenv:
+On Linux and macOS, the GreenNode CLI can be installed using a standalone installer that creates an isolated virtualenv:
 
 ```bash
 ./scripts/install
 ```
 
-This installs to `~/.local/lib/greenode` and symlinks `grn` to `~/.local/bin/`. Make sure `~/.local/bin` is in your `PATH`.
+This installs to `~/.local/lib/GreenNode` and symlinks `grn` to `~/.local/bin/`. Make sure `~/.local/bin` is in your `PATH`.
 
 ## Offline install
 
