@@ -6,6 +6,8 @@ repo_name: vngcloud/greennode-cli
 
 theme:
   name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
   palette:
     - scheme: default
       primary: green
