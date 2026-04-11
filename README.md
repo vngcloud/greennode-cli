@@ -4,44 +4,77 @@ Universal Command Line Interface for Greenode (VNG Cloud).
 
 ## Installation
 
-### Standard install (pip)
+### Prerequisites
+
+- Python 3.10 or later
+- `pip` 21.0 or greater
+- `setuptools` 68.0 or greater
+
+### Install from PyPI
+
+The recommended way to install the Greenode CLI is to use `pip` in a `virtualenv`:
 
 ```bash
-pip install .
+python -m pip install grncli
 ```
 
-### Development install
+or, if you are not installing in a `virtualenv`, to install globally:
 
 ```bash
-pip install -e ".[dev]"
+sudo python -m pip install grncli
 ```
 
-### Standalone install (isolated virtualenv)
+or for your user:
+
+```bash
+python -m pip install --user grncli
+```
+
+If you have the grncli package installed and want to upgrade to the latest version:
+
+```bash
+python -m pip install --upgrade grncli
+```
+
+### Install from source
+
+```bash
+git clone https://github.com/vngcloud/greennode-cli.git
+cd greennode-cli
+python -m pip install .
+```
+
+To install with development dependencies:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+### Bundled installer
+
+On Linux and macOS, the Greenode CLI can be installed using a standalone installer that creates an isolated virtualenv:
 
 ```bash
 ./scripts/install
 ```
 
-This creates a virtualenv at `~/.local/lib/greenode` and symlinks `grn` to `~/.local/bin/`.
+This installs to `~/.local/lib/greenode` and symlinks `grn` to `~/.local/bin/`. Make sure `~/.local/bin` is in your `PATH`.
 
-### Offline install (bundle)
+### Offline install
+
+For environments without internet access, you can build a self-contained bundle:
 
 ```bash
-# Build bundle (requires internet)
+# On a machine with internet access
 ./scripts/make-bundle
 
-# Install on target machine (no internet required)
-unzip dist/grncli-bundle.zip
+# Transfer dist/grncli-bundle.zip to target machine, then:
+unzip grncli-bundle.zip
 cd grncli-bundle
 ./install-offline
 ```
 
-### CI install
-
-```bash
-./scripts/ci/install      # Build wheel and install
-./scripts/ci/run-tests    # Run test suite
-```
+If you want to run the `develop` branch of the Greenode CLI, see the [Development Guide](docs/DEVELOPMENT.md).
 
 ## Configuration
 
