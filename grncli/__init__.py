@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 # Data path for cli.json and other data files
 _grncli_data_path = os.path.join(
