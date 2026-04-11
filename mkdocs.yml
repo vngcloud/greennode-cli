@@ -52,6 +52,9 @@ nav:
       - create-nodegroup: commands/vks/create-nodegroup.md
       - update-nodegroup: commands/vks/update-nodegroup.md
       - delete-nodegroup: commands/vks/delete-nodegroup.md
+    - Auto-Upgrade:
+      - set-auto-upgrade-config: commands/vks/set-auto-upgrade-config.md
+      - delete-auto-upgrade-config: commands/vks/delete-auto-upgrade-config.md
     - Waiter:
       - wait-cluster-active: commands/vks/wait-cluster-active.md
   - Development:

@@ -28,6 +28,13 @@ grn vks <command> [options]
 | [update-nodegroup](update-nodegroup.md) | Update a node group |
 | [delete-nodegroup](delete-nodegroup.md) | Delete a node group |
 
+### Auto-Upgrade
+
+| Command | Description |
+|---------|-------------|
+| [set-auto-upgrade-config](set-auto-upgrade-config.md) | Configure auto-upgrade schedule for a cluster |
+| [delete-auto-upgrade-config](delete-auto-upgrade-config.md) | Delete auto-upgrade config for a cluster |
+
 ### Waiter
 
 | Command | Description |
