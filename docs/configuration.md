@@ -84,8 +84,6 @@ grn vks list-clusters
 
 | Variable | Description |
 |----------|-------------|
-| `GRN_CLIENT_ID` | Client ID (overrides config file) |
-| `GRN_CLIENT_SECRET` | Client Secret (overrides config file) |
 | `GRN_DEFAULT_REGION` | Default region |
 | `GRN_PROFILE` | Profile name |
 | `GRN_DEFAULT_OUTPUT` | Output format |

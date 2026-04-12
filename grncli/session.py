@@ -31,8 +31,7 @@ class Session:
     """Manages config, credentials, region, and service endpoints.
 
     Credential resolution order (high → low priority):
-    1. Environment variables: GRN_CLIENT_ID, GRN_CLIENT_SECRET
-    2. Profile in ~/.greenode/credentials
+    1. Profile in ~/.greenode/credentials
     """
 
     def __init__(
@@ -98,11 +97,6 @@ class Session:
         return self._emitter.emit_first_non_none(event_name, **kwargs)
 
     def get_credentials(self) -> dict[str, str]:
-        env_id = os.environ.get('GRN_CLIENT_ID')
-        env_secret = os.environ.get('GRN_CLIENT_SECRET')
-        if env_id and env_secret:
-            return {'client_id': env_id, 'client_secret': env_secret}
-
         if self._credentials_cache is not None:
             return self._credentials_cache
 

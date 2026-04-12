@@ -76,11 +76,14 @@ python -m pytest tests/ -v
 
 2. **CHANGELOG**: Add changelog fragment via `./scripts/new-change`
 
-3. **Spec** (`docs/superpowers/specs/2026-04-10-greenode-cli-design.md`):
-   - Update command list in Section 4
-   - Update file structure in Section 2 if new files added
+3. **README.md**: Update if installation, configuration, or basic commands change
 
-This is not optional. Code without docs is not done.
+4. **CLAUDE.md**: Update if conventions, security rules, or key files change
+
+**After ANY change to business logic, security, configuration, or commands:**
+Review ALL docs above and update what's affected. If unsure whether a doc needs updating, read it and check.
+
+Code without docs is not done.
 
 ## Key files
 

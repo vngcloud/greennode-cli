@@ -24,8 +24,6 @@ def greenode_config(tmp_path):
     config.write_text("[default]\nregion = HCM-3\noutput = json\n")
 
     with patch.dict(os.environ, {}, clear=False):
-        os.environ.pop('GRN_CLIENT_ID', None)
-        os.environ.pop('GRN_CLIENT_SECRET', None)
         os.environ.pop('GRN_DEFAULT_REGION', None)
         os.environ.pop('GRN_PROFILE', None)
 

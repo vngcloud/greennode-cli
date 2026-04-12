@@ -45,11 +45,6 @@ class ConfigureListCommand(BasicCommand):
         return ('profile', '<not set>', 'None', 'None')
 
     def _resolve_credential(self, key):
-        env_map = {'client_id': 'GRN_CLIENT_ID', 'client_secret': 'GRN_CLIENT_SECRET'}
-        env_var = env_map.get(key, '')
-        env_val = os.environ.get(env_var)
-        if env_val:
-            return (key, self._mask_value(env_val), 'env', env_var)
         try:
             creds = self._session.get_credentials()
             value = creds.get(key)
