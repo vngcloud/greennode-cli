@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+### Bug Fixes
+* **security**: Remove GRN_CLIENT_ID/SECRET env var support for credential security
+
 ## 0.2.0
 
 ### Features

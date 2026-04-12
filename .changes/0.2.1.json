@@ -1,0 +1,7 @@
+[
+  {
+    "type": "bugfix",
+    "category": "security",
+    "description": "Remove GRN_CLIENT_ID/SECRET env var support for credential security"
+  }
+]
