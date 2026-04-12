@@ -49,16 +49,6 @@ class TestSessionCredentials:
         assert creds['client_id'] == 'staging-id'
         assert creds['client_secret'] == 'staging-secret'
 
-    def test_env_vars_override_file(self, config_dir):
-        with patch.dict(os.environ, {
-            'GRN_CLIENT_ID': 'env-id',
-            'GRN_CLIENT_SECRET': 'env-secret',
-        }):
-            session = Session(config_dir=str(config_dir))
-            creds = session.get_credentials()
-            assert creds['client_id'] == 'env-id'
-            assert creds['client_secret'] == 'env-secret'
-
     def test_missing_credentials_raises(self, tmp_path):
         session = Session(config_dir=str(tmp_path))
         with pytest.raises(Exception, match="credentials"):

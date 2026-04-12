@@ -59,11 +59,9 @@ Default output format [json]:
 
 Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
 
-You can also configure credentials via environment variables:
+You can also configure the region via environment variable:
 
 ```bash
-export GRN_CLIENT_ID=<your-client-id>
-export GRN_CLIENT_SECRET=<your-client-secret>
 export GRN_DEFAULT_REGION=HCM-3
 ```
 
