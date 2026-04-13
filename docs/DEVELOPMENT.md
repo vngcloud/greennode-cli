@@ -1,184 +1,120 @@
-# Greenode CLI — Development Guide
+# GreenNode CLI — Development Guide
 
 ## Developer Workflow: Feature/Bug → Release
 
 ### Phase 1: Development
 
 ```bash
-# 1. Create a new branch
-git checkout -b feat/add-vks-describe-events
+# 1. Create a feature branch
+git checkout main && git pull
+git checkout -b feat/add-new-command
 
-# 2. Code + test
-vim grncli/customizations/vks/describe_events.py
-python -m pytest tests/ -v
+# 2. Code
+# Add command in go/cmd/vks/<command>.go
+# Register in go/cmd/vks/vks.go
 
-# 3. Add changelog fragment
-./scripts/new-change -t feature -c vks -d "Add describe-events command"
-# → Creates: .changes/next-release/feature-vks-a1b2c3d4.json
+# 3. Build and test
+cd go
+CGO_ENABLED=0 go build -o grn .
+./grn vks <new-command> --help
+./grn vks <new-command> --dry-run ...
 
-# 4. Commit + push
+# 4. Add changelog fragment
+cd ..
+./scripts/new-change -t feature -c vks -d "Add new command"
+
+# 5. Commit + push
 git add .
-git commit -m "feat(vks): add describe-events command"
-git push -u origin feat/add-vks-describe-events
+git commit -m "feat(vks): add new command"
+git push -u origin feat/add-new-command
 ```
 
-### Phase 2: PR to develop (testing)
+### Phase 2: Pull Request
 
 ```
-5. Create PR on GitHub (feat/add-vks-describe-events → develop)
-
-6. GitHub Actions auto-trigger:
-
-   run-tests.yml
-   ├── Python 3.10 × Ubuntu     ✅
-   ├── Python 3.10 × macOS      ✅
-   ├── Python 3.10 × Windows    ✅
-   ├── Python 3.11 × Ubuntu     ✅
-   ├── ...
-   └── Python 3.13 × Windows    ✅
-
-   bundle-test.yml
-   ├── Python 3.10 × Ubuntu     ✅
-   ├── Python 3.10 × macOS      ✅
-   ├── Python 3.13 × Ubuntu     ✅
-   └── Python 3.13 × macOS      ✅
-
-7. Review + merge PR to develop
-8. Test on develop environment
+5. Create PR on GitHub (feat/add-new-command → main)
+6. CI runs tests
+7. Review + merge PR to main
 ```
 
-### Phase 3: PR to main (release-ready)
-
-```
-9. Create PR on GitHub (feat/add-vks-describe-events → main)
-   - Same CI checks run again on main
-   - Review + merge PR to main
-```
-
-### Phase 4: Release
+### Phase 3: Release
 
 ```bash
-# 10. Checkout main
+# 8. Checkout main
 git checkout main
 git pull
 
-# 11. Bump version (e.g. 0.1.0 → 0.2.0)
+# 9. Bump version
 ./scripts/bump-version minor
-```
+# Updates go/cmd/root.go version, merges changelog, commits, tags
 
-The `bump-version` script automatically:
-- Updates `grncli/__init__.py`: `'0.1.0'` → `'0.2.0'`
-- Merges `.changes/next-release/*.json` → `.changes/0.2.0.json`
-- Clears `.changes/next-release/`
-- Regenerates `CHANGELOG.md`
-- Commits: `release: v0.2.0`
-- Creates git tag: `v0.2.0`
-
-```bash
-# 10. Push + push tags
+# 10. Push
 git push && git push --tags
-```
-
-```
-11. GitHub Actions auto-trigger (release.yml):
-
-    Job 1: test
-      pip install + pytest                          ✅
-
-    Job 2: build (depends on test)
-      Verify tag v0.2.0 == __init__.py 0.2.0        ✅
-      python -m build → dist/grncli-0.2.0.whl       ✅
-      scripts/make-bundle → grncli-bundle.zip        ✅
-      Upload artifacts                               ✅
-
-    Job 3: github-release (depends on build)
-      Create GitHub Release "v0.2.0"                 ✅
-      Upload: grncli-0.2.0.whl
-              grncli-0.2.0.tar.gz
-              grncli-bundle.zip
-
-    Job 4: publish-pypi (depends on build)
-      Publish to PyPI                                ✅
-      → pip install grncli==0.2.0
+# → GitHub Actions: build binaries → GitHub Release → upload artifacts
 ```
 
 ### Phase 4: Users Install
 
 ```bash
-# From PyPI
-pip install grncli
-pip install grncli==0.2.0
+# Download binary from GitHub Releases
+curl -L -o grn https://github.com/vngcloud/greennode-cli/releases/latest/download/grn-darwin-arm64
+chmod +x grn
+sudo mv grn /usr/local/bin/
 
-# From GitHub Releases (offline bundle)
-unzip grncli-bundle.zip
-cd grncli-bundle && ./install-offline
+# Or build from source
+git clone https://github.com/vngcloud/greennode-cli.git
+cd greennode-cli/go && go build -o grn .
+```
+
+---
+
+## Building
+
+```bash
+cd go
+
+# Build for current platform
+CGO_ENABLED=0 go build -o grn .
+
+# Cross-compile for all platforms
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o grn-linux-amd64 .
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o grn-linux-arm64 .
+GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o grn-darwin-amd64 .
+GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o grn-darwin-arm64 .
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o grn-windows-amd64.exe .
 ```
 
 ---
 
 ## Hotfix Flow
 
-For urgent fixes that skip the PR process:
-
 ```bash
 git checkout main
-vim grncli/auth.py                        # Fix bug
-python -m pytest tests/ -v
-./scripts/new-change -t bugfix -c auth -d "Fix token refresh race condition"
-git commit -am "fix(auth): fix token refresh race condition"
-./scripts/bump-version patch              # 0.2.0 → 0.2.1
-git push && git push --tags               # → release.yml triggers
+cd go
+# Fix bug
+CGO_ENABLED=0 go build -o grn .
+./grn vks <command-to-test>
+cd ..
+./scripts/new-change -t bugfix -c auth -d "Fix token refresh"
+git commit -am "fix(auth): fix token refresh"
+./scripts/bump-version patch
+git push && git push --tags
 ```
-
----
-
-## Manual Release (Workflow Dispatch)
-
-Trigger a release manually from GitHub UI:
-
-```
-GitHub → Actions → Release → Run workflow → Input version: "0.2.1"
-```
-
-**When to use:**
-- Release workflow failed mid-way (e.g. PyPI publish timeout) — re-run with same version
-- Tag exists but release workflow was not yet configured at that time
-- Need to rebuild release artifacts without bumping version
-
-90% of releases use tag trigger (via `bump-version` + push). Manual dispatch is a fallback.
 
 ---
 
 ## Changelog Management
-
-### Adding entries
 
 ```bash
 # Interactive
 ./scripts/new-change
 
 # CLI args
-./scripts/new-change -t feature -c vks -d "Add describe-events command"
+./scripts/new-change -t feature -c vks -d "Add new command"
 ./scripts/new-change -t bugfix -c auth -d "Fix token refresh"
-./scripts/new-change -t enhancement -c configure -d "Add region validation"
 ```
 
-**Change types:** `feature`, `bugfix`, `enhancement`, `api-change`
-
-### Viewing unreleased changes
-
-```bash
-ls .changes/next-release/
-cat .changes/next-release/*.json
-```
-
-### Regenerating CHANGELOG.md
-
-```bash
-./scripts/render-changelog
-```
-
----
+Change types: `feature`, `bugfix`, `enhancement`, `api-change`
 
 ## Version Bumping
 
@@ -188,25 +124,11 @@ cat .changes/next-release/*.json
 ./scripts/bump-version major   # 0.1.0 → 1.0.0 (breaking changes)
 ```
 
----
-
 ## CI/CD Workflows
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `run-tests.yml` | PR, push to main | Test matrix: Python 3.10-3.13 × Ubuntu/macOS/Windows |
-| `release.yml` | Tag push `v*`, manual dispatch | Build + GitHub Release + PyPI publish |
-| `bundle-test.yml` | PR, push to main | Test offline bundle installation |
-| `stale.yml` | Daily schedule | Auto-close stale issues (30 days stale, 7 days close) |
-
----
-
-## Adding a New Service
-
-Other product teams can add CLI commands:
-
-1. Create `grncli/customizations/<service>/`
-2. Write commands extending `BasicCommand`
-3. Register in `grncli/handlers.py`
-
-See `grncli/customizations/vks/` for a complete reference implementation.
+| `run-tests.yml` | PR to main/develop | Build + test Go binary |
+| `release.yml` | Tag push `v*`, manual dispatch | Build multi-platform binaries + GitHub Release |
+| `deploy-docs.yml` | Push to main (docs/) | Deploy documentation to GitHub Pages |
+| `stale.yml` | Daily schedule | Auto-close stale issues |

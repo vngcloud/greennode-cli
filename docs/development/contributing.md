@@ -6,17 +6,21 @@ See [CONTRIBUTING.md](https://github.com/vngcloud/greennode-cli/blob/main/CONTRI
 
 ```bash
 git clone https://github.com/vngcloud/greennode-cli.git
-cd greennode-cli
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-python -m pytest tests/ -v
+cd greennode-cli/go
+go build -o grn .
+./grn --version
 ```
+
+## Adding a new command
+
+1. Create `cmd/vks/<command_name>.go`
+2. Define `cobra.Command` with Use, Short, RunE
+3. Register in `cmd/vks/vks.go`
+4. Add `validator.ValidateID()` for ID args
+5. Add `--dry-run` for create/update/delete
 
 ## Adding a new service
 
-1. Create `grncli/customizations/<service>/`
-2. Write commands extending `BasicCommand`
-3. Register in `grncli/handlers.py`
-
-See `grncli/customizations/vks/` for a complete reference implementation.
+1. Create `cmd/<service>/` directory
+2. Create parent command with `cobra.Command`
+3. Register in `cmd/root.go`

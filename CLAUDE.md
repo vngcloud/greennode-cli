@@ -2,86 +2,124 @@
 
 ## Project overview
 
-GreenNode CLI (`grn`) is a unified command-line tool for managing GreenNode (VNG Cloud) services. Architecture cloned from AWS CLI with hand-written commands. VKS (VNG Kubernetes Service) is the first service; other product teams add their own services by following the same pattern.
+GreenNode CLI (`grn`) is a unified command-line tool for managing GreenNode (VNG Cloud) services. Written in Go, distributed as a single binary. VKS (VNG Kubernetes Service) is the first service; other product teams add their own services.
 
 - **Repo**: `vngcloud/greennode-cli`
 - **Docs**: https://vngcloud.github.io/greennode-cli/
-- **PyPI**: https://pypi.org/project/grncli/
+- **Language**: Go (using cobra CLI framework)
+- **Binary**: Single file, zero runtime dependencies
+
+## Project structure
+
+```
+go/
+├── main.go                          # Entry point
+├── cmd/
+│   ├── root.go                      # Root command + global flags + --version
+│   ├── configure/
+│   │   ├── configure.go             # Interactive setup
+│   │   ├── list.go                  # grn configure list
+│   │   ├── get.go                   # grn configure get
+│   │   └── set.go                   # grn configure set
+│   └── vks/
+│       ├── vks.go                   # VKS parent command
+│       ├── helpers.go               # Shared utilities (client, output, parsing)
+│       ├── list_clusters.go         # Auto-pagination
+│       ├── get_cluster.go
+│       ├── create_cluster.go        # --dry-run validation
+│       ├── update_cluster.go
+│       ├── delete_cluster.go        # Confirm + --force + --dry-run
+│       ├── list_nodegroups.go
+│       ├── get_nodegroup.go
+│       ├── create_nodegroup.go
+│       ├── update_nodegroup.go
+│       ├── delete_nodegroup.go
+│       ├── wait_cluster_active.go   # Polling waiter
+│       └── auto_upgrade.go          # Set/delete auto-upgrade
+├── internal/
+│   ├── config/
+│   │   ├── config.go               # Config + credentials loading (INI)
+│   │   └── writer.go               # ConfigFileWriter (0600 perms)
+│   ├── auth/token.go                # OAuth2 Client Credentials (IAM)
+│   ├── client/client.go             # HTTP client with retry + auto-refresh
+│   ├── formatter/formatter.go       # JSON/Table/Text + JMESPath
+│   └── validator/validator.go       # ID format validation
+├── go.mod, go.sum
+```
 
 ## Code conventions
 
-- All source code text must be in **English** — error messages, descriptions, comments, docstrings, ARG_TABLE help_text
-- Follow existing AWS CLI patterns: `CLIDriver` → `ServiceCommand` → `BasicCommand`
-- Each command file has one class, one responsibility
-- Use `display_output(result, parsed_globals)` helper for API response formatting
+- All source code text in **English**
+- Use cobra for all commands
+- Internal packages in `internal/` (not importable externally)
+- Commands in `cmd/` following cobra patterns
+- Use `cobra.Command` with `RunE` for error handling
 
 ## VNG Cloud API quirks
 
-- **IAM API uses camelCase**: `grantType`, `accessToken`, `expiresIn` (not snake_case OAuth2 standard)
+- **IAM API uses camelCase**: `grantType`, `accessToken`, `expiresIn`
 - **VKS API pagination is 0-based**: page 0 = first page
-- **`--version` conflict**: Use `--k8s-version` for Kubernetes version to avoid clash with global `--version` flag
+- **`--version` conflict**: Use `--k8s-version` for Kubernetes version
 
 ## Adding a new command
 
-1. Create file in `grncli/customizations/vks/<command_name>.py`
-2. Extend `BasicCommand` with `NAME`, `DESCRIPTION`, `ARG_TABLE`
-3. Implement `_run_main(self, parsed_args, parsed_globals)`
-4. Register in `grncli/customizations/vks/__init__.py`
-5. Add `validate_id()` calls for any ID args used in URLs
+1. Create file in `cmd/vks/<command_name>.go`
+2. Define `cobra.Command` with Use, Short, RunE
+3. Add flags via `cmd.Flags()`
+4. Register in `cmd/vks/vks.go` init(): `VksCmd.AddCommand(newCmd)`
+5. Add `validator.ValidateID()` for any ID args in URLs
 6. Add `--dry-run` for create/update/delete commands
-7. Add `--force` + confirmation prompt for delete commands
+7. Add `--force` + confirmation for delete commands
 
 ## Adding a new service
 
-1. Create `grncli/customizations/<service>/`
-2. Write commands extending `BasicCommand`
-3. Register in `grncli/handlers.py`
-4. See `grncli/customizations/vks/` for reference
+1. Create `cmd/<service>/` directory
+2. Create parent command file with `cobra.Command`
+3. Register in `cmd/root.go` init(): `rootCmd.AddCommand(serviceCmd)`
 
 ## Security rules
 
-- **Credential masking**: `grn configure list` and `grn configure get` must mask `client_id`/`client_secret` (show last 4 chars only)
-- **Input validation**: All cluster-id and nodegroup-id args must be validated via `validators.validate_id()` before constructing URLs — prevents path traversal
-- **SSL default on**: `--no-verify-ssl` must print warning to stderr
-- **Tokens in memory only**: Never write tokens to disk or logs
-- **Dependency pinning**: Pin to major versions (`httpx<1.0`, `PyYAML<7.0`)
+- **Credential masking**: `configure list` and `configure get` mask client_id/client_secret (last 4 chars only)
+- **No credential env vars**: `GRN_CLIENT_ID`/`GRN_CLIENT_SECRET` not supported — file only
+- **Input validation**: All cluster-id/nodegroup-id validated via `validator.ValidateID()` before URLs
+- **SSL default on**: `--no-verify-ssl` prints warning to stderr
+- **Tokens in memory only**: Never written to disk or logged
+- **File permissions**: Credentials file created with 0600, directory 0700
 
-## Testing
+## Building
 
 ```bash
-python -m pytest tests/ -v
-```
+cd go
+CGO_ENABLED=0 go build -o grn .
 
-- Tests must pass on Python 3.10-3.13 × Ubuntu/macOS/Windows
-- Skip Unix-only tests on Windows with `@pytest.mark.skipif(platform.system() == 'Windows', ...)`
+# Cross-compile
+GOOS=linux GOARCH=amd64 go build -o grn-linux-amd64 .
+GOOS=darwin GOARCH=arm64 go build -o grn-darwin-arm64 .
+GOOS=windows GOARCH=amd64 go build -o grn-windows-amd64.exe .
+```
 
 ## Git workflow
 
-- **Do not auto commit/push** — only change source code, user will ask for commit/push when ready
-- **Branches**: `main` (production), `develop` (testing), `feat/*` or `fix/*` (feature/bug branches)
-- **PRs**: feature → develop (test), feature → main (release-ready)
-- **Changelog**: Add fragment via `./scripts/new-change` for every change
+- **Do not auto commit/push** — only change source code, user will ask for commit/push
+- **Main branch is protected** — must use PR
+- **Changelog**: `./scripts/new-change` for every change
 - **Release**: `./scripts/bump-version minor` → `git push && git push --tags`
-- **Main branch is protected** — cannot push directly, must use PR
 
 ## Documentation update rule
 
-**After completing any feature or bugfix, update ALL related documentation before considering the work done:**
-
-1. **GitHub Pages docs** (`docs/`):
-   - Add/update command reference page in `docs/commands/vks/<command>.md`
-   - Update `docs/commands/vks/index.md` command table
-   - Update relevant usage guides if behavior changes (pagination, dry-run, etc.)
-   - Update `mkdocs.yml` nav if new pages added
-
-2. **CHANGELOG**: Add changelog fragment via `./scripts/new-change`
-
-3. **README.md**: Update if installation, configuration, or basic commands change
-
-4. **CLAUDE.md**: Update if conventions, security rules, or key files change
-
 **After ANY change to business logic, security, configuration, or commands:**
-Review ALL docs above and update what's affected. If unsure whether a doc needs updating, read it and check.
+
+1. Review ALL docs below and update what's affected
+2. If unsure whether a doc needs updating, read it and check
+
+**Docs to check:**
+
+- `docs/` (GitHub Pages) — command references, usage guides
+- `README.md`
+- `CLAUDE.md`
+- `CONTRIBUTING.md`
+- `docs/DEVELOPMENT.md`
+- `./scripts/new-change` — changelog fragment
 
 Code without docs is not done.
 
@@ -89,13 +127,11 @@ Code without docs is not done.
 
 | File | Purpose |
 |------|---------|
-| `grncli/clidriver.py` | CLIDriver + ServiceCommand — main orchestrator |
-| `grncli/session.py` | Config, credentials, region, endpoints, SSL, timeouts |
-| `grncli/auth.py` | TokenManager — OAuth2 Client Credentials with IAM |
-| `grncli/client.py` | HTTP client with retry (3x backoff) + auto token refresh |
-| `grncli/customizations/commands.py` | BasicCommand base class + display_output + help system |
-| `grncli/customizations/vks/validators.py` | ID format validation |
-| `grncli/data/cli.json` | Global CLI options (AWS CLI style) |
-| `mkdocs.yml` | Documentation site config |
-| `scripts/bump-version` | Bump version + merge changelog + commit + tag |
-| `scripts/new-change` | Create changelog fragment |
+| `cmd/root.go` | Root command, global flags, --version |
+| `cmd/vks/helpers.go` | Client creation, output formatting, label/taint parsing |
+| `internal/config/config.go` | Config loading from ~/.greenode/, REGIONS map |
+| `internal/config/writer.go` | INI file writer with 0600 perms |
+| `internal/auth/token.go` | TokenManager — OAuth2 with IAM (camelCase) |
+| `internal/client/client.go` | HTTP client with retry (3x backoff) + 401 refresh |
+| `internal/formatter/formatter.go` | JSON/Table/Text + JMESPath |
+| `internal/validator/validator.go` | ID format validation |

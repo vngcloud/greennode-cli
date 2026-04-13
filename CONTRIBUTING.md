@@ -1,28 +1,26 @@
-# Contributing to Greenode CLI
-
-Thank you for your interest in contributing to the Greenode CLI!
+# Contributing to GreenNode CLI
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.10 or later
+- Go 1.22 or later
 - Git
 
 ### Setup development environment
 
 ```bash
 git clone https://github.com/vngcloud/greennode-cli.git
-cd greennode-cli
-python -m venv .venv
-source .venv/bin/activate   # On Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+cd greennode-cli/go
+go build -o grn .
+./grn --version
 ```
 
-### Run tests
+### Build
 
 ```bash
-python -m pytest tests/ -v
+cd go
+CGO_ENABLED=0 go build -o grn .
 ```
 
 ## Development Workflow
@@ -30,17 +28,17 @@ python -m pytest tests/ -v
 ### 1. Create a feature branch
 
 ```bash
-git checkout develop
-git pull
+git checkout main && git pull
 git checkout -b feat/your-feature-name
 ```
 
-### 2. Make changes and test
+### 2. Make changes and build
 
 ```bash
+cd go
 # Write code
-# Write tests
-python -m pytest tests/ -v
+CGO_ENABLED=0 go build -o grn .
+./grn vks <your-command> --help
 ```
 
 ### 3. Add a changelog entry
@@ -65,52 +63,32 @@ docs(readme): update installation instructions
 
 ### 5. Create a Pull Request
 
-- PR to `develop` for testing
 - PR to `main` when release-ready
 - CI must pass before merge
 - At least 1 approval required
 
+## Adding a New Command
+
+1. Create `go/cmd/vks/<command_name>.go`
+2. Define `cobra.Command` with Use, Short, RunE
+3. Register in `go/cmd/vks/vks.go`: `VksCmd.AddCommand(newCmd)`
+4. Add `validator.ValidateID()` for any ID args
+5. Add `--dry-run` for create/update/delete
+6. Add `--force` + confirmation for delete
+
 ## Adding a New Service
 
-Other product teams can add CLI commands:
-
-1. Create `grncli/customizations/<service>/`
-2. Write commands extending `BasicCommand` (see `grncli/customizations/vks/` for reference)
-3. Register in `grncli/handlers.py`
-
-### Command template
-
-```python
-from grncli.customizations.commands import BasicCommand, display_output
-
-class MyCommand(BasicCommand):
-    NAME = 'my-command'
-    DESCRIPTION = 'Description of my command'
-    ARG_TABLE = [
-        {'name': 'my-arg', 'help_text': 'Argument description', 'required': True},
-    ]
-
-    def _run_main(self, parsed_args, parsed_globals):
-        client = self._session.create_client('my-service')
-        result = client.get('/v1/my-endpoint')
-        display_output(result, parsed_globals)
-        return 0
-```
+1. Create `go/cmd/<service>/` directory
+2. Create parent command with `cobra.Command`
+3. Register in `go/cmd/root.go`: `rootCmd.AddCommand(serviceCmd)`
 
 ## Code Style
 
-- All source code text (messages, comments, descriptions) must be in English
-- Follow existing patterns in the codebase
-- Add tests for new features
-- Validate user inputs (especially IDs used in URLs)
+- All source code text in English
+- Use cobra patterns for all commands
+- Validate user inputs (IDs used in URLs)
 - Use `--dry-run` for create/update/delete commands
 - Add `--force` to skip confirmation on delete commands
-
-## Reporting Issues
-
-- Use [GitHub Issues](https://github.com/vngcloud/greennode-cli/issues)
-- Search existing issues before creating a new one
-- Use the provided issue templates
 
 ## License
 
