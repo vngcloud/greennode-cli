@@ -1,0 +1,7 @@
+[
+  {
+    "type": "feature",
+    "category": "core",
+    "description": "Rewrite CLI in Go - single binary, zero dependencies, cross-platform"
+  }
+]

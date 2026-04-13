@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0
+
+### Features
+* **core**: Rewrite CLI in Go - single binary, zero dependencies, cross-platform
+
 ## 0.2.1
 
 ### Bug Fixes
