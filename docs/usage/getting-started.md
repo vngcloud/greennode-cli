@@ -6,7 +6,7 @@
 grn                              # Show available commands
 grn help                         # Same
 grn vks                          # Show available VKS commands
-grn vks create-cluster help      # Show command help with required/optional args
+grn vks create-cluster --help    # Show command help with all flags
 ```
 
 ## Command structure

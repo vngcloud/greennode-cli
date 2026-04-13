@@ -1,78 +1,53 @@
 # Installation
 
-## Prerequisites
+## Download binary
 
-- Python 3.10 or later
-- `pip` 21.0 or greater
-- `setuptools` 68.0 or greater
+Download the latest binary for your platform from [GitHub Releases](https://github.com/vngcloud/greennode-cli/releases):
 
-## Install from PyPI
-
-The recommended way to install the GreenNode CLI is to use `pip` in a `virtualenv`:
+### macOS
 
 ```bash
-python -m pip install grncli
+# Apple Silicon (M1/M2/M3)
+curl -L -o grn https://github.com/vngcloud/greennode-cli/releases/latest/download/grn-darwin-arm64
+
+# Intel
+curl -L -o grn https://github.com/vngcloud/greennode-cli/releases/latest/download/grn-darwin-amd64
+
+chmod +x grn
+sudo mv grn /usr/local/bin/
 ```
 
-or, if you are not installing in a `virtualenv`, to install globally:
+### Linux
 
 ```bash
-sudo python -m pip install grncli
+# x86_64
+curl -L -o grn https://github.com/vngcloud/greennode-cli/releases/latest/download/grn-linux-amd64
+
+# ARM64
+curl -L -o grn https://github.com/vngcloud/greennode-cli/releases/latest/download/grn-linux-arm64
+
+chmod +x grn
+sudo mv grn /usr/local/bin/
 ```
 
-or for your user:
+### Windows
 
-```bash
-python -m pip install --user grncli
-```
+Download `grn-windows-amd64.exe` from [GitHub Releases](https://github.com/vngcloud/greennode-cli/releases) and add to your PATH.
 
-If you have the grncli package installed and want to upgrade to the latest version:
+## Build from source
 
-```bash
-python -m pip install --upgrade grncli
-```
-
-## Install from source
+Requires [Go 1.22+](https://go.dev/dl/):
 
 ```bash
 git clone https://github.com/vngcloud/greennode-cli.git
-cd greennode-cli
-python -m pip install .
-```
-
-To install with development dependencies:
-
-```bash
-python -m pip install -e ".[dev]"
-```
-
-## Bundled installer
-
-On Linux and macOS, the GreenNode CLI can be installed using a standalone installer that creates an isolated virtualenv:
-
-```bash
-./scripts/install
-```
-
-This installs to `~/.local/lib/GreenNode` and symlinks `grn` to `~/.local/bin/`. Make sure `~/.local/bin` is in your `PATH`.
-
-## Offline install
-
-For environments without internet access, you can build a self-contained bundle:
-
-```bash
-# On a machine with internet access
-./scripts/make-bundle
-
-# Transfer dist/grncli-bundle.zip to target machine, then:
-unzip grncli-bundle.zip
-cd grncli-bundle
-./install-offline
+cd greennode-cli/go
+go build -o grn .
+sudo mv grn /usr/local/bin/
 ```
 
 ## Verify installation
 
 ```bash
 grn --version
-# grn-cli/0.1.0 Python/3.13.5 Darwin/25.2.0
+# grn-cli/0.1.0 Go/1.22.2 darwin/arm64
 ```

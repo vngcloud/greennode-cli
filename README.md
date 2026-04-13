@@ -10,37 +10,36 @@ The GreenNode CLI (`grn`) is a unified tool to manage your GreenNode services fr
 
 ### Requirements
 
-- Python 3.10 or later (3.10.x, 3.11.x, 3.12.x, 3.13.x)
+- No dependencies required — `grn` is a single binary
 
 ### Installation
 
-The safest way to install the GreenNode CLI is to use `pip` in a `virtualenv`:
+Download the latest binary for your platform from [GitHub Releases](https://github.com/vngcloud/greennode-cli/releases):
+
+**macOS / Linux:**
 
 ```bash
-python -m pip install grncli
+# Download (replace OS and ARCH as needed)
+curl -L -o grn https://github.com/vngcloud/greennode-cli/releases/latest/download/grn-darwin-arm64
+chmod +x grn
+sudo mv grn /usr/local/bin/
 ```
 
-or, if you are not installing in a `virtualenv`, to install globally:
+**Or build from source:**
 
 ```bash
-sudo python -m pip install grncli
+git clone https://github.com/vngcloud/greennode-cli.git
+cd greennode-cli/go
+go build -o grn .
+sudo mv grn /usr/local/bin/
 ```
 
-or for your user:
+**Verify installation:**
 
 ```bash
-python -m pip install --user grncli
+grn --version
+# grn-cli/0.1.0 Go/1.22.2 darwin/arm64
 ```
-
-If you have the grncli package installed and want to upgrade to the latest version:
-
-```bash
-python -m pip install --upgrade grncli
-```
-
-On Linux and macOS, the GreenNode CLI can also be installed using a [bundled installer](https://vngcloud.github.io/greennode-cli/installation/#bundled-installer). For offline environments, see the [offline install](https://vngcloud.github.io/greennode-cli/installation/#offline-install) guide.
-
-If you want to run the `develop` branch of the GreenNode CLI, see the [Contributing Guide](CONTRIBUTING.md).
 
 ### Configuration
 
@@ -58,12 +57,6 @@ Default output format [json]:
 ```
 
 Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
-
-You can also configure the region via environment variable:
-
-```bash
-export GRN_DEFAULT_REGION=HCM-3
-```
 
 Or create the credential files directly:
 
@@ -109,7 +102,7 @@ To get help on any command:
 ```bash
 grn help
 grn vks
-grn vks create-cluster help
+grn vks create-cluster --help
 ```
 
 To check the version:
@@ -130,7 +123,6 @@ The best way to interact with our team is through GitHub:
 - [Documentation](https://vngcloud.github.io/greennode-cli/)
 - [Changelog](CHANGELOG.md)
 - [Contributing Guide](CONTRIBUTING.md)
-- [PyPI Package](https://pypi.org/project/grncli/)
 - [VNG Cloud Console](https://hcm-3.console.vngcloud.vn/)
 
 ## License
