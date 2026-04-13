@@ -6,6 +6,10 @@ Global options are placed before the service name:
 grn [global-options] <service> <command> [command-options]
 ```
 
+## Environment variables
+
+Global options can also be set via environment variables. See the [Configuration Guide](../configuration.md#environment-variables) for the full list, including `GRN_ACCESS_KEY_ID` and `GRN_SECRET_ACCESS_KEY` for credential overrides.
+
 ## Options
 
 | Option | Description |

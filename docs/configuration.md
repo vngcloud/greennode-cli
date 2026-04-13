@@ -17,6 +17,37 @@ Default output format [json]:
 
 Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
 
+## Credential resolution order
+
+Credentials are resolved in the following order (highest to lowest priority):
+
+1. **Environment variables**: `GRN_ACCESS_KEY_ID`, `GRN_SECRET_ACCESS_KEY`
+2. **Shared credentials file**: `~/.greenode/credentials`
+
+## Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `GRN_ACCESS_KEY_ID` | Client ID (overrides credentials file) |
+| `GRN_SECRET_ACCESS_KEY` | Client Secret (overrides credentials file) |
+| `GRN_DEFAULT_REGION` | Default region |
+| `GRN_PROFILE` | Profile name (default: "default") |
+| `GRN_DEFAULT_OUTPUT` | Output format |
+
+Environment variables take priority over config file values.
+
+### Example
+
+```bash
+# Set credentials via environment variables
+export GRN_ACCESS_KEY_ID=your-client-id
+export GRN_SECRET_ACCESS_KEY=your-client-secret
+export GRN_DEFAULT_REGION=HCM-3
+
+# Commands will use env var credentials automatically
+grn vks list-clusters
+```
+
 ## Config files
 
 Credentials and config are stored in separate files:
@@ -79,16 +110,6 @@ grn --profile staging vks list-clusters
 export GRN_PROFILE=staging
 grn vks list-clusters
 ```
-
-## Environment variables
-
-| Variable | Description |
-|----------|-------------|
-| `GRN_DEFAULT_REGION` | Default region |
-| `GRN_PROFILE` | Profile name |
-| `GRN_DEFAULT_OUTPUT` | Output format |
-
-Environment variables take priority over config file values.
 
 ## Available regions
 

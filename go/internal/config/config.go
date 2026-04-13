@@ -52,19 +52,32 @@ func LoadConfig(profile string) (*Config, error) {
 		Regions: REGIONS,
 	}
 
-	// Load credentials
-	credsFile := filepath.Join(configDir, "credentials")
-	if _, err := os.Stat(credsFile); err == nil {
-		iniCreds, err := ini.Load(credsFile)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse credentials file: %w", err)
+	// Load credentials — env vars override file
+	if v := os.Getenv("GRN_ACCESS_KEY_ID"); v != "" {
+		cfg.ClientID = v
+	}
+	if v := os.Getenv("GRN_SECRET_ACCESS_KEY"); v != "" {
+		cfg.ClientSecret = v
+	}
+
+	if cfg.ClientID == "" || cfg.ClientSecret == "" {
+		credsFile := filepath.Join(configDir, "credentials")
+		if _, err := os.Stat(credsFile); err == nil {
+			iniCreds, err := ini.Load(credsFile)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse credentials file: %w", err)
+			}
+			section, err := iniCreds.GetSection(profile)
+			if err != nil {
+				return nil, fmt.Errorf("profile '%s' does not exist in %s", profile, credsFile)
+			}
+			if cfg.ClientID == "" {
+				cfg.ClientID = section.Key("client_id").String()
+			}
+			if cfg.ClientSecret == "" {
+				cfg.ClientSecret = section.Key("client_secret").String()
+			}
 		}
-		section, err := iniCreds.GetSection(profile)
-		if err != nil {
-			return nil, fmt.Errorf("profile '%s' does not exist in %s", profile, credsFile)
-		}
-		cfg.ClientID = section.Key("client_id").String()
-		cfg.ClientSecret = section.Key("client_secret").String()
 	}
 
 	// Load config file

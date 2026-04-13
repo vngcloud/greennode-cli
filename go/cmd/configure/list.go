@@ -70,6 +70,18 @@ func resolveCredEntry(name, value, credsFile string) configEntry {
 	if value == "" {
 		return configEntry{name: name, value: "<not set>", typ: "None", location: "None"}
 	}
+
+	// Check if value came from env var
+	envMap := map[string]string{
+		"client_id":     "GRN_ACCESS_KEY_ID",
+		"client_secret": "GRN_SECRET_ACCESS_KEY",
+	}
+	if envVar, ok := envMap[name]; ok {
+		if os.Getenv(envVar) != "" {
+			return configEntry{name: name, value: config.MaskCredential(value), typ: "env", location: envVar}
+		}
+	}
+
 	home, _ := os.UserHomeDir()
 	loc := "~" + credsFile[len(home):]
 	return configEntry{name: name, value: config.MaskCredential(value), typ: "config-file", location: loc}

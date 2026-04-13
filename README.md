@@ -43,7 +43,17 @@ grn --version
 
 ### Configuration
 
-Before using the GreenNode CLI, you need to configure your credentials. The quickest way is to run:
+Before using the GreenNode CLI, you need to configure your credentials. There are three ways:
+
+**Method 1: Environment variables**
+
+```bash
+export GRN_ACCESS_KEY_ID=your-client-id
+export GRN_SECRET_ACCESS_KEY=your-client-secret
+export GRN_DEFAULT_REGION=HCM-3
+```
+
+**Method 2: Interactive setup (recommended)**
 
 ```bash
 grn configure
@@ -56,9 +66,7 @@ Default region name [HCM-3]:
 Default output format [json]:
 ```
 
-Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
-
-Or create the credential files directly:
+**Method 3: Credentials file (manual)**
 
 ```ini
 # ~/.greenode/credentials
@@ -74,6 +82,10 @@ region = HCM-3
 output = json
 ```
 
+Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
+
+Credential resolution order: environment variables take priority over the credentials file.
+
 To use multiple profiles:
 
 ```bash
@@ -81,7 +93,7 @@ grn configure --profile staging
 grn --profile staging vks list-clusters
 ```
 
-For more configuration options, see the [Configuration Guide](https://vngcloud.github.io/greennode-cli/configuration/).
+For more configuration options, see the [Configuration Guide](https://vngcloud.github.io/greenode-cli/configuration/).
 
 ### Basic Commands
 
@@ -120,7 +132,7 @@ The best way to interact with our team is through GitHub:
 
 ## More Resources
 
-- [Documentation](https://vngcloud.github.io/greennode-cli/)
+- [Documentation](https://vngcloud.github.io/greenode-cli/)
 - [Changelog](CHANGELOG.md)
 - [Contributing Guide](CONTRIBUTING.md)
 - [VNG Cloud Console](https://hcm-3.console.vngcloud.vn/)
