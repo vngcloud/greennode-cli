@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0
+
+### Features
+* **core**: Add GRN_ACCESS_KEY_ID/GRN_SECRET_ACCESS_KEY env var credential support
+
 ## 1.0.0
 
 ### Features

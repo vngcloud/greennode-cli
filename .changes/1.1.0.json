@@ -1,0 +1,7 @@
+[
+  {
+    "type": "feature",
+    "category": "core",
+    "description": "Add GRN_ACCESS_KEY_ID/GRN_SECRET_ACCESS_KEY env var credential support"
+  }
+]
