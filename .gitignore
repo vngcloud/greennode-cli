@@ -1,3 +1,9 @@
+# Go
+go/grn
+go/grn-*
+*.exe
+
+# Python (legacy)
 __pycache__/
 *.pyc
 *.pyo
