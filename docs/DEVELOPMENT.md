@@ -19,11 +19,16 @@ CGO_ENABLED=0 go build -o grn .
 ./grn vks <new-command> --help
 ./grn vks <new-command> --dry-run ...
 
-# 4. Add changelog fragment
+# 4. Update GitHub Pages docs
+# - Create docs/commands/vks/<command-name>.md
+# - Add entry to docs/commands/vks/index.md table
+# - Add nav entry to mkdocs.yml
+
+# 5. Add changelog fragment
 cd ..
 ./scripts/new-change -t feature -c vks -d "Add new command"
 
-# 5. Commit + push
+# 6. Commit + push
 git add .
 git commit -m "feat(vks): add new command"
 git push -u origin feat/add-new-command

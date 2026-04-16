@@ -55,6 +55,8 @@ nav:
     - Auto-Upgrade:
       - set-auto-upgrade-config: commands/vks/set-auto-upgrade-config.md
       - delete-auto-upgrade-config: commands/vks/delete-auto-upgrade-config.md
+    - Quota:
+      - get-quota: commands/vks/get-quota.md
     - Waiter:
       - wait-cluster-active: commands/vks/wait-cluster-active.md
   - Development:

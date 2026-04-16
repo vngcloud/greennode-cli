@@ -75,6 +75,9 @@ docs(readme): update installation instructions
 4. Add `validator.ValidateID()` for any ID args
 5. Add `--dry-run` for create/update/delete
 6. Add `--force` + confirmation for delete
+7. Create `docs/commands/vks/<command-name>.md` — command reference page
+8. Add entry to `docs/commands/vks/index.md` table
+9. Add nav entry to `mkdocs.yml`
 
 ## Adding a New Service
 
