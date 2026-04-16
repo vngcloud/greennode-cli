@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+### Features
+* **vks**: Add get-quota command to retrieve VKS quota limits and current usage
+* **vks**: Add get-quota command reference page to GitHub Pages docs
+
 ## 1.1.0
 
 ### Features

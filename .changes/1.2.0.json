@@ -1,0 +1,12 @@
+[
+  {
+    "type": "feature",
+    "category": "vks",
+    "description": "Add get-quota command to retrieve VKS quota limits and current usage"
+  },
+  {
+    "type": "feature",
+    "category": "vks",
+    "description": "Add get-quota command reference page to GitHub Pages docs"
+  }
+]
