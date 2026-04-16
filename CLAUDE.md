@@ -114,12 +114,20 @@ GOOS=windows GOARCH=amd64 go build -o grn-windows-amd64.exe .
 
 **Docs to check:**
 
-- `docs/` (GitHub Pages) — command references, usage guides
+- `docs/commands/vks/` (GitHub Pages) — add/update command reference page, check `index.md` table
+- `mkdocs.yml` — add nav entry for any new command page
 - `README.md`
 - `CLAUDE.md`
 - `CONTRIBUTING.md`
 - `docs/DEVELOPMENT.md`
 - `./scripts/new-change` — changelog fragment
+
+**Examples:**
+- Added a command → create `docs/commands/vks/<command>.md` + add to `docs/commands/vks/index.md` table + add to `mkdocs.yml` nav
+- Removed a command → delete doc page + remove from `index.md` + remove from `mkdocs.yml`
+- Changed flags or output → update the command's doc page
+- Changed auth/credentials → update README config section + CLAUDE.md security rules
+- Changed project structure → update README structure + CLAUDE.md repository structure
 
 Code without docs is not done.
 

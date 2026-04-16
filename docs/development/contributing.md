@@ -18,6 +18,9 @@ go build -o grn .
 3. Register in `cmd/vks/vks.go`
 4. Add `validator.ValidateID()` for ID args
 5. Add `--dry-run` for create/update/delete
+6. Create `docs/commands/vks/<command-name>.md` — command reference page
+7. Add entry to `docs/commands/vks/index.md` table
+8. Add nav entry to `mkdocs.yml`
 
 ## Adding a new service
 

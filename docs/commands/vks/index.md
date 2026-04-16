@@ -35,6 +35,12 @@ grn vks <command> [options]
 | [set-auto-upgrade-config](set-auto-upgrade-config.md) | Configure auto-upgrade schedule for a cluster |
 | [delete-auto-upgrade-config](delete-auto-upgrade-config.md) | Delete auto-upgrade config for a cluster |
 
+### Quota
+
+| Command | Description |
+|---------|-------------|
+| [get-quota](get-quota.md) | Get VKS quota limits and current usage |
+
 ### Waiter
 
 | Command | Description |
