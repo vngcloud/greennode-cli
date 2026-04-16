@@ -35,4 +35,7 @@ func init() {
 	// Auto-upgrade commands
 	VksCmd.AddCommand(setAutoUpgradeConfigCmd)
 	VksCmd.AddCommand(deleteAutoUpgradeConfigCmd)
+
+	// Quota commands
+	VksCmd.AddCommand(getQuotaCmd)
 }
