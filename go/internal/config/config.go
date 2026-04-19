@@ -27,6 +27,7 @@ type Config struct {
 	Region       string
 	Output       string
 	Profile      string
+	ProjectID    string
 	Regions      map[string]map[string]string
 }
 
@@ -105,12 +106,20 @@ func LoadConfig(profile string) (*Config, error) {
 			if v := section.Key("output").String(); v != "" {
 				cfg.Output = v
 			}
+			if v := section.Key("project_id").String(); v != "" {
+				cfg.ProjectID = v
+			}
 		}
 	}
 
 	// Env var overrides for region
 	if v := os.Getenv("GRN_DEFAULT_REGION"); v != "" {
 		cfg.Region = v
+	}
+
+	// Env var override for project_id
+	if v := os.Getenv("GRN_DEFAULT_PROJECT_ID"); v != "" {
+		cfg.ProjectID = v
 	}
 
 	// Default output

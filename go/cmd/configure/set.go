@@ -43,13 +43,19 @@ func runSet(cmd *cobra.Command, args []string) {
 		}
 	case "region":
 		cfg, _ := config.LoadConfig(profile)
-		if err := writer.WriteConfig(profile, value, cfg.Output); err != nil {
+		if err := writer.WriteConfig(profile, value, cfg.Output, cfg.ProjectID); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	case "output":
 		cfg, _ := config.LoadConfig(profile)
-		if err := writer.WriteConfig(profile, cfg.Region, value); err != nil {
+		if err := writer.WriteConfig(profile, cfg.Region, value, cfg.ProjectID); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+	case "project_id":
+		cfg, _ := config.LoadConfig(profile)
+		if err := writer.WriteConfig(profile, cfg.Region, cfg.Output, value); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}

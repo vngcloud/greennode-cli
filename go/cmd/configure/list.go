@@ -42,6 +42,7 @@ func runList(cmd *cobra.Command, args []string) {
 		resolveCredEntry("client_secret", cfg.ClientSecret, credsFile),
 		resolveConfigEntry("region", cfg.Region, configFile),
 		resolveConfigEntry("output", cfg.Output, configFile),
+		resolveConfigEntry("project_id", cfg.ProjectID, configFile),
 	}
 
 	// Print header
@@ -94,8 +95,9 @@ func resolveConfigEntry(name, value, configFile string) configEntry {
 
 	// Check if value came from env var
 	envMap := map[string]string{
-		"region": "GRN_DEFAULT_REGION",
-		"output": "GRN_DEFAULT_OUTPUT",
+		"region":     "GRN_DEFAULT_REGION",
+		"output":     "GRN_DEFAULT_OUTPUT",
+		"project_id": "GRN_DEFAULT_PROJECT_ID",
 	}
 	if envVar, ok := envMap[name]; ok {
 		if os.Getenv(envVar) != "" {

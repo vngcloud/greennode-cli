@@ -13,7 +13,12 @@ GRN Client ID [None]: <your-client-id>
 GRN Client Secret [None]: <your-client-secret>
 Default region name [HCM-3]:
 Default output format [json]:
+Project ID (leave blank to auto-detect at runtime) [None]: pro-xxxxxxxx
 ```
+
+`Project ID` is the VNG Cloud project UUID (e.g. `pro-e28d4501-...`). Each user may
+have multiple projects; pick the one you work with. Leave blank to let downstream
+tools (such as the GreenNode MCP Server) auto-detect at first call.
 
 Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
 
@@ -31,6 +36,7 @@ Credentials are resolved in the following order (highest to lowest priority):
 | `GRN_ACCESS_KEY_ID` | Client ID (overrides credentials file) |
 | `GRN_SECRET_ACCESS_KEY` | Client Secret (overrides credentials file) |
 | `GRN_DEFAULT_REGION` | Default region |
+| `GRN_DEFAULT_PROJECT_ID` | Project ID (VNG Cloud project UUID) |
 | `GRN_PROFILE` | Profile name (default: "default") |
 | `GRN_DEFAULT_OUTPUT` | Output format |
 
@@ -68,10 +74,12 @@ client_secret = yyy
 [default]
 region = HCM-3
 output = json
+project_id = pro-xxxxxxxx
 
 [profile staging]
 region = HAN
 output = table
+project_id = pro-yyyyyyyy
 ```
 
 Credentials file is created with `0600` permissions (owner read/write only).
@@ -95,6 +103,7 @@ grn configure set region HAN  # Set a specific value
  client_secret    ****************c123     config-file    ~/.greenode/credentials
         region                   HCM-3     config-file    ~/.greenode/config
         output                    json     config-file    ~/.greenode/config
+    project_id       pro-xxxxxxxx          config-file    ~/.greenode/config
 ```
 
 ## Profiles
