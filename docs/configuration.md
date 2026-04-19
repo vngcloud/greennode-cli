@@ -13,12 +13,19 @@ GRN Client ID [None]: <your-client-id>
 GRN Client Secret [None]: <your-client-secret>
 Default region name [HCM-3]:
 Default output format [json]:
-Project ID (leave blank to auto-detect at runtime) [None]: pro-xxxxxxxx
+Project ID (leave blank to auto-detect) [None]:
+Fetching project_id from HCM-3...
+Auto-detected project_id: pro-xxxxxxxx
 ```
 
-`Project ID` is the VNG Cloud project UUID (e.g. `pro-e28d4501-...`). Each user may
-have multiple projects; pick the one you work with. Leave blank to let downstream
-tools (such as the GreenNode MCP Server) auto-detect at first call.
+`Project ID` is the VNG Cloud project UUID for the selected region (e.g.
+`pro-e28d4501-...`). Leave blank and the wizard calls the vServer API with
+your credentials to detect and save it. Each user has one project per region,
+so the detection is unambiguous.
+
+If auto-detect fails (network or auth error), the wizard prints a warning and
+leaves the field blank — downstream tools (such as the GreenNode MCP Server)
+can still auto-detect at first call.
 
 Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
 

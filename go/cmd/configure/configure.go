@@ -48,7 +48,7 @@ func runConfigure(cmd *cobra.Command, args []string) {
 	clientSecret := promptWithDefault(reader, "Client Secret", maskCred(cfg.ClientSecret))
 	region := promptWithDefault(reader, "Default region name", cfg.Region)
 	output := promptWithDefault(reader, "Default output format", cfg.Output)
-	projectID := promptWithDefault(reader, "Project ID (leave blank to auto-detect at runtime)", cfg.ProjectID)
+	projectID := promptWithDefault(reader, "Project ID (leave blank to auto-detect)", cfg.ProjectID)
 
 	// If user entered masked value or empty, keep original
 	if clientID == maskCred(cfg.ClientID) || clientID == "" {
@@ -68,6 +68,22 @@ func runConfigure(cmd *cobra.Command, args []string) {
 	if !contains(validOutputs, output) {
 		fmt.Fprintf(os.Stderr, "Warning: invalid output format '%s', using default 'json'\n", output)
 		output = "json"
+	}
+
+	// Auto-detect project_id when left blank
+	if projectID == "" && clientID != "" && clientSecret != "" {
+		if endpoint, err := vserverEndpointForRegion(region); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: cannot determine vServer endpoint for region %q; leaving project_id blank.\n", region)
+		} else {
+			fmt.Printf("Fetching project_id from %s...\n", region)
+			detected, derr := detectProjectID(clientID, clientSecret, endpoint)
+			if derr != nil {
+				fmt.Fprintf(os.Stderr, "Warning: auto-detect failed: %v\nLeaving project_id blank.\n", derr)
+			} else {
+				fmt.Printf("Auto-detected project_id: %s\n", detected)
+				projectID = detected
+			}
+		}
 	}
 
 	writer := config.NewConfigFileWriter()
