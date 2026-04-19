@@ -1,0 +1,7 @@
+[
+  {
+    "type": "feature",
+    "category": "configure",
+    "description": "Add project_id field to configure wizard, configure list/get/set, and GRN_DEFAULT_PROJECT_ID env var override"
+  }
+]

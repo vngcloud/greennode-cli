@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0
+
+### Features
+* **configure**: Add project_id field to configure wizard, configure list/get/set, and GRN_DEFAULT_PROJECT_ID env var override
+
 ## 1.2.0
 
 ### Features
