@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+### Enhancements
+* **configure**: Auto-detect project_id during grn configure by calling vServer /v1/projects with the given credentials and region
+
 ## 1.3.0
 
 ### Features

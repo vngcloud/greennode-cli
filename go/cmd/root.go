@@ -10,7 +10,7 @@ import (
 	"github.com/vngcloud/greennode-cli/cmd/vks"
 )
 
-const cliVersion = "1.3.0"
+const cliVersion = "1.3.1"
 
 // Global flags
 var (

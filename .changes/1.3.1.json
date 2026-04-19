@@ -1,0 +1,7 @@
+[
+  {
+    "type": "enhancement",
+    "category": "configure",
+    "description": "Auto-detect project_id during grn configure by calling vServer /v1/projects with the given credentials and region"
+  }
+]
