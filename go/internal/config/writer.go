@@ -45,8 +45,10 @@ func (w *ConfigFileWriter) WriteCredentials(profile, clientID, clientSecret stri
 	return w.save(cfg, filePath)
 }
 
-// WriteConfig writes region and output for the given profile.
-func (w *ConfigFileWriter) WriteConfig(profile, region, output string) error {
+// WriteConfig writes region, output, and project_id for the given profile.
+// An empty projectID is written as an empty key to explicitly clear any
+// previously-saved value.
+func (w *ConfigFileWriter) WriteConfig(profile, region, output, projectID string) error {
 	if err := w.ensureDir(); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
@@ -68,6 +70,7 @@ func (w *ConfigFileWriter) WriteConfig(profile, region, output string) error {
 	}
 	section.Key("region").SetValue(region)
 	section.Key("output").SetValue(output)
+	section.Key("project_id").SetValue(projectID)
 
 	return w.save(cfg, filePath)
 }

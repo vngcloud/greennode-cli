@@ -43,6 +43,8 @@ func runGet(cmd *cobra.Command, args []string) {
 		value = cfg.Output
 	case "profile":
 		value = cfg.Profile
+	case "project_id":
+		value = cfg.ProjectID
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown configuration key: %s\n", key)
 		os.Exit(1)

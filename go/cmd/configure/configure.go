@@ -48,6 +48,7 @@ func runConfigure(cmd *cobra.Command, args []string) {
 	clientSecret := promptWithDefault(reader, "Client Secret", maskCred(cfg.ClientSecret))
 	region := promptWithDefault(reader, "Default region name", cfg.Region)
 	output := promptWithDefault(reader, "Default output format", cfg.Output)
+	projectID := promptWithDefault(reader, "Project ID (leave blank to auto-detect at runtime)", cfg.ProjectID)
 
 	// If user entered masked value or empty, keep original
 	if clientID == maskCred(cfg.ClientID) || clientID == "" {
@@ -76,7 +77,7 @@ func runConfigure(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if err := writer.WriteConfig(profile, region, output); err != nil {
+	if err := writer.WriteConfig(profile, region, output, projectID); err != nil {
 		fmt.Fprintf(os.Stderr, "Error saving config: %v\n", err)
 		os.Exit(1)
 	}
