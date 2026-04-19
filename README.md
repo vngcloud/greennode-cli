@@ -65,7 +65,9 @@ GRN Client ID [None]: <your-client-id>
 GRN Client Secret [None]: <your-client-secret>
 Default region name [HCM-3]:
 Default output format [json]:
-Project ID (leave blank to auto-detect at runtime) [None]: pro-xxxxxxxx
+Project ID (leave blank to auto-detect) [None]:
+Fetching project_id from HCM-3...
+Auto-detected project_id: pro-xxxxxxxx
 ```
 
 **Method 3: Credentials file (manual)**
