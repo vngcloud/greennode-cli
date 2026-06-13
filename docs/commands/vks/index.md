@@ -26,7 +26,15 @@ grn vks <command> [options]
 | [get-nodegroup](get-nodegroup.md) | Get node group details |
 | [create-nodegroup](create-nodegroup.md) | Create a new node group |
 | [update-nodegroup](update-nodegroup.md) | Update a node group |
+| [update-nodegroup-metadata](update-nodegroup-metadata.md) | Update labels, tags, and taints of a node group |
+| [upgrade-nodegroup-version](upgrade-nodegroup-version.md) | Upgrade the Kubernetes version of a node group |
 | [delete-nodegroup](delete-nodegroup.md) | Delete a node group |
+
+### Versions
+
+| Command | Description |
+|---------|-------------|
+| [list-cluster-versions](list-cluster-versions.md) | List available Kubernetes versions |
 
 ### Auto-Upgrade
 
@@ -34,6 +42,26 @@ grn vks <command> [options]
 |---------|-------------|
 | [set-auto-upgrade-config](set-auto-upgrade-config.md) | Configure auto-upgrade schedule for a cluster |
 | [delete-auto-upgrade-config](delete-auto-upgrade-config.md) | Delete auto-upgrade config for a cluster |
+
+### Auto-Healing
+
+| Command | Description |
+|---------|-------------|
+| [config-auto-healing](config-auto-healing.md) | Configure auto-healing for a cluster |
+
+### Events
+
+| Command | Description |
+|---------|-------------|
+| [get-cluster-events](get-cluster-events.md) | Get the list of events for a cluster |
+| [get-nodegroup-events](get-nodegroup-events.md) | Get the list of events for a node group |
+
+### Kubeconfig
+
+| Command | Description |
+|---------|-------------|
+| [generate-kubeconfig](generate-kubeconfig.md) | Request generation of a cluster kubeconfig |
+| [update-kubeconfig](update-kubeconfig.md) | Fetch and merge the cluster kubeconfig into your kubeconfig file |
 
 ### Quota
 

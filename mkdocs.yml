@@ -51,10 +51,22 @@ nav:
       - get-nodegroup: commands/vks/get-nodegroup.md
       - create-nodegroup: commands/vks/create-nodegroup.md
       - update-nodegroup: commands/vks/update-nodegroup.md
+      - update-nodegroup-metadata: commands/vks/update-nodegroup-metadata.md
+      - upgrade-nodegroup-version: commands/vks/upgrade-nodegroup-version.md
       - delete-nodegroup: commands/vks/delete-nodegroup.md
+    - Versions:
+      - list-cluster-versions: commands/vks/list-cluster-versions.md
     - Auto-Upgrade:
       - set-auto-upgrade-config: commands/vks/set-auto-upgrade-config.md
       - delete-auto-upgrade-config: commands/vks/delete-auto-upgrade-config.md
+    - Auto-Healing:
+      - config-auto-healing: commands/vks/config-auto-healing.md
+    - Events:
+      - get-cluster-events: commands/vks/get-cluster-events.md
+      - get-nodegroup-events: commands/vks/get-nodegroup-events.md
+    - Kubeconfig:
+      - generate-kubeconfig: commands/vks/generate-kubeconfig.md
+      - update-kubeconfig: commands/vks/update-kubeconfig.md
     - Quota:
       - get-quota: commands/vks/get-quota.md
     - Waiter:

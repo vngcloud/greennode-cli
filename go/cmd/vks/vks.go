@@ -28,6 +28,7 @@ func init() {
 	VksCmd.AddCommand(createNodegroupCmd)
 	VksCmd.AddCommand(updateNodegroupCmd)
 	VksCmd.AddCommand(deleteNodegroupCmd)
+	VksCmd.AddCommand(updateNodegroupMetadataCmd)
 
 	// Wait commands
 	VksCmd.AddCommand(waitClusterActiveCmd)
@@ -36,6 +37,19 @@ func init() {
 	VksCmd.AddCommand(setAutoUpgradeConfigCmd)
 	VksCmd.AddCommand(deleteAutoUpgradeConfigCmd)
 
+	// Auto-healing commands
+	VksCmd.AddCommand(configAutoHealingCmd)
+
 	// Quota commands
 	VksCmd.AddCommand(getQuotaCmd)
+
+	// Version & event commands
+	VksCmd.AddCommand(listClusterVersionsCmd)
+	VksCmd.AddCommand(upgradeNodegroupVersionCmd)
+	VksCmd.AddCommand(getClusterEventsCmd)
+	VksCmd.AddCommand(getNodegroupEventsCmd)
+
+	// Kubeconfig commands
+	VksCmd.AddCommand(generateKubeconfigCmd)
+	VksCmd.AddCommand(updateKubeconfigCmd)
 }

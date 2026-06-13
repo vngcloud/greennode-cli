@@ -134,3 +134,23 @@ func parseCommaSeparated(s string) []string {
 	}
 	return result
 }
+
+// buildEventsQuery builds query params for events endpoints, including only
+// flags the user explicitly set. `changed` maps flag name -> was it set.
+// VKS pagination is 0-based, so page is passed through verbatim.
+func buildEventsQuery(action, eventType string, page, pageSize int, changed map[string]bool) map[string]string {
+	params := map[string]string{}
+	if changed["action"] && action != "" {
+		params["action"] = action
+	}
+	if changed["type"] && eventType != "" {
+		params["type"] = eventType
+	}
+	if changed["page"] {
+		params["page"] = fmt.Sprintf("%d", page)
+	}
+	if changed["page-size"] {
+		params["pageSize"] = fmt.Sprintf("%d", pageSize)
+	}
+	return params
+}

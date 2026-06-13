@@ -33,7 +33,15 @@ go/
 │       ├── get_nodegroup.go
 │       ├── create_nodegroup.go
 │       ├── update_nodegroup.go
+│       ├── update_nodegroup_metadata.go  # Update labels/tags/taints
+│       ├── upgrade_nodegroup_version.go  # Upgrade node group k8s version
 │       ├── delete_nodegroup.go
+│       ├── list_cluster_versions.go      # Available k8s versions
+│       ├── config_auto_healing.go        # Configure auto-healing
+│       ├── get_cluster_events.go         # Cluster events (paginated)
+│       ├── get_nodegroup_events.go       # Node group events (paginated)
+│       ├── generate_kubeconfig.go        # Request kubeconfig (async)
+│       ├── update_kubeconfig.go          # Fetch + merge kubeconfig
 │       ├── wait_cluster_active.go   # Polling waiter
 │       └── auto_upgrade.go          # Set/delete auto-upgrade
 ├── internal/
@@ -43,6 +51,8 @@ go/
 │   ├── auth/token.go                # OAuth2 Client Credentials (IAM)
 │   ├── client/client.go             # HTTP client with retry + auto-refresh
 │   ├── formatter/formatter.go       # JSON/Table/Text + JMESPath
+│   ├── kubeconfig/
+│   │   └── kubeconfig.go            # Merge kubeconfig into ~/.kube/config
 │   └── validator/validator.go       # ID format validation
 ├── go.mod, go.sum
 ```

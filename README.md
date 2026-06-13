@@ -128,6 +128,57 @@ To check the version:
 grn --version
 ```
 
+### Available VKS Commands
+
+**Cluster**
+
+- `list-clusters` — List all VKS clusters
+- `get-cluster` — Get cluster details
+- `create-cluster` — Create a new VKS cluster
+- `update-cluster` — Update a VKS cluster
+- `delete-cluster` — Delete a VKS cluster
+
+**Node Group**
+
+- `list-nodegroups` — List node groups for a cluster
+- `get-nodegroup` — Get node group details
+- `create-nodegroup` — Create a new node group
+- `update-nodegroup` — Update a node group
+- `update-nodegroup-metadata` — Update labels, tags, and taints of a node group
+- `upgrade-nodegroup-version` — Upgrade the Kubernetes version of a node group
+- `delete-nodegroup` — Delete a node group
+
+**Versions**
+
+- `list-cluster-versions` — List available Kubernetes versions
+
+**Auto-Upgrade**
+
+- `set-auto-upgrade-config` — Configure auto-upgrade schedule for a cluster
+- `delete-auto-upgrade-config` — Delete auto-upgrade config for a cluster
+
+**Auto-Healing**
+
+- `config-auto-healing` — Configure auto-healing for a cluster
+
+**Events**
+
+- `get-cluster-events` — Get the list of events for a cluster
+- `get-nodegroup-events` — Get the list of events for a node group
+
+**Kubeconfig**
+
+- `generate-kubeconfig` — Request generation of a cluster kubeconfig
+- `update-kubeconfig` — Fetch and merge the cluster kubeconfig into your kubeconfig file
+
+**Quota**
+
+- `get-quota` — Get VKS quota limits and current usage
+
+**Waiter**
+
+- `wait-cluster-active` — Wait until a cluster reaches ACTIVE status
+
 ## Getting Help
 
 The best way to interact with our team is through GitHub:
