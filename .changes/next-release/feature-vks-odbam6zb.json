@@ -1,0 +1,5 @@
+{
+  "type": "feature",
+  "category": "vks",
+  "description": "Add upgrade-nodegroup-version, config-auto-healing, and update-nodegroup-metadata commands"
+}

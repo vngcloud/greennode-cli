@@ -1,0 +1,5 @@
+{
+  "type": "feature",
+  "category": "vks",
+  "description": "Add list-cluster-versions, get-cluster-events, and get-nodegroup-events commands"
+}

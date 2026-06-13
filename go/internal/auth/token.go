@@ -50,6 +50,15 @@ func (tm *TokenManager) GetToken() (string, error) {
 	return tm.fetchToken()
 }
 
+// SetToken pre-seeds the token manager with a static token and expiry.
+// Intended for use in tests only.
+func (tm *TokenManager) SetToken(token string, expiresAt time.Time) {
+	tm.mu.Lock()
+	defer tm.mu.Unlock()
+	tm.accessToken = token
+	tm.expiresAt = expiresAt
+}
+
 // RefreshToken forces a token refresh.
 func (tm *TokenManager) RefreshToken() (string, error) {
 	tm.mu.Lock()

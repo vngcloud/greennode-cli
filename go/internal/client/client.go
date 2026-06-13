@@ -81,6 +81,11 @@ func (c *GreenodeClient) Put(path string, body interface{}) (interface{}, error)
 	return c.request("PUT", path, nil, body)
 }
 
+// Patch performs a PATCH request with a JSON body.
+func (c *GreenodeClient) Patch(path string, body interface{}) (interface{}, error) {
+	return c.request("PATCH", path, nil, body)
+}
+
 // Delete performs a DELETE request.
 func (c *GreenodeClient) Delete(path string, params map[string]string) (interface{}, error) {
 	return c.request("DELETE", path, params, nil)

@@ -1,0 +1,5 @@
+{
+  "type": "feature",
+  "category": "vks",
+  "description": "Add kubeconfig commands (generate-kubeconfig, update-kubeconfig) for VKS clusters"
+}
