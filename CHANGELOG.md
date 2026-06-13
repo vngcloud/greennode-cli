@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0
+
+### Features
+* **vks**: Add kubeconfig commands (generate-kubeconfig, update-kubeconfig) for VKS clusters
+* **vks**: Add list-cluster-versions, get-cluster-events, and get-nodegroup-events commands
+* **vks**: Add upgrade-nodegroup-version, config-auto-healing, and update-nodegroup-metadata commands
+
 ## 1.3.1
 
 ### Enhancements
