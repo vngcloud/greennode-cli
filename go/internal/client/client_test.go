@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,5 +38,23 @@ func TestPatchSendsPatchMethodAndBody(t *testing.T) {
 	}
 	if gotBody != `{"enableAutoHealing":true}` {
 		t.Errorf("body = %q, want enableAutoHealing payload", gotBody)
+	}
+}
+
+func TestFormatErrorSurfacesNestedErrorObject(t *testing.T) {
+	// VKS returns errors as {"error": {"message": ...}} — a nested object, not a
+	// string. The detail must still reach the user instead of being dropped.
+	body := []byte(`{"error":{"message":"KubeConfig can only be requested when the cluster is ACTIVE."}}`)
+	got := formatError(http.StatusBadRequest, body)
+	if !strings.Contains(got, "cluster is ACTIVE") {
+		t.Errorf("formatError = %q, want it to contain the nested error message", got)
+	}
+}
+
+func TestFormatErrorUsesPlainStringMessage(t *testing.T) {
+	body := []byte(`{"message":"boom"}`)
+	got := formatError(http.StatusBadRequest, body)
+	if !strings.Contains(got, "boom") {
+		t.Errorf("formatError = %q, want it to contain %q", got, "boom")
 	}
 }

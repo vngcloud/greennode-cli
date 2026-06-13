@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/vngcloud/greennode-cli/internal/auth"
@@ -191,6 +193,14 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set("Content-Type", "application/json")
 
+		if c.debug {
+			fmt.Fprintf(os.Stderr, "[debug] %s %s\n", method, fullURL)
+			if body != nil {
+				jsonBody, _ := json.Marshal(body)
+				fmt.Fprintf(os.Stderr, "[debug] request body: %s\n", string(jsonBody))
+			}
+		}
+
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
 			lastErr = err
@@ -204,6 +214,10 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 
 		respBody, _ := io.ReadAll(resp.Body)
 		resp.Body.Close()
+
+		if c.debug {
+			fmt.Fprintf(os.Stderr, "[debug] response %d: %s\n", resp.StatusCode, string(respBody))
+		}
 
 		// 401 — refresh token and retry once
 		if resp.StatusCode == http.StatusUnauthorized {
@@ -265,6 +279,12 @@ func formatError(statusCode int, body []byte) string {
 					detail = msg
 				}
 			}
+		}
+		// Fallback: the error payload didn't use a known string field (e.g. the
+		// VKS API returns {"error": {...}} as a nested object). Surface the raw
+		// JSON body so the server's message isn't silently dropped.
+		if detail == "" && len(body) > 0 {
+			detail = strings.TrimSpace(string(body))
 		}
 	} else {
 		detail = string(body)

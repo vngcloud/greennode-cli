@@ -1,0 +1,5 @@
+{
+  "type": "bugfix",
+  "category": "client",
+  "description": "Surface nested API error bodies ({\"error\":{\"message\":...}}) instead of a bare HTTP status, and make the --debug flag log request/response"
+}
