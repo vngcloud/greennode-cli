@@ -1,0 +1,19 @@
+# Go
+go/grn
+go/grn-*
+*.exe
+
+# Python (legacy)
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+.venv/
+.eggs/
+*.whl
+
+# Internal design docs (local only, not for public repo)
+docs/superpowers/
