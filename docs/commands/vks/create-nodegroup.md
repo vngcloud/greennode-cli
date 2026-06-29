@@ -12,7 +12,7 @@ Use `--dry-run` to validate parameters (name format, disk size range, node count
 grn vks create-nodegroup
     --cluster-id <value>
     --name <value>
-    --image-id <value>
+    [--os <value>]
     --flavor-id <value>
     --disk-type <value>
     --ssh-key-id <value>
@@ -35,8 +35,8 @@ grn vks create-nodegroup
 `--name` (required)
 : Node group name. Must be 5–15 characters, lowercase alphanumeric and hyphens, starting and ending with an alphanumeric character.
 
-`--image-id` (required)
-: OS image ID for the nodes.
+`--os` (optional, default `ubuntu`)
+: Node group OS image. Supported values: `ubuntu`, `linux`.
 
 `--flavor-id` (required)
 : Flavor (instance type) ID for the nodes.
@@ -82,7 +82,7 @@ Create a basic node group:
 grn vks create-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --name worker-ng \
-  --image-id img-ubuntu-22-04-k8s \
+  --os ubuntu \
   --flavor-id flv-4c8g \
   --disk-type SSD \
   --ssh-key-id key-abc12345-0000-0000-0000-000000000001
@@ -94,7 +94,7 @@ Create a GPU node group with taints and labels:
 grn vks create-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --name gpu-ng \
-  --image-id img-ubuntu-22-04-k8s-gpu \
+  --os ubuntu \
   --flavor-id flv-8c32g-gpu \
   --disk-type SSD \
   --disk-size 200 \
@@ -111,7 +111,7 @@ Validate parameters without creating:
 grn vks create-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --name worker-ng \
-  --image-id img-ubuntu-22-04-k8s \
+  --os ubuntu \
   --flavor-id flv-4c8g \
   --disk-type SSD \
   --ssh-key-id key-abc12345-0000-0000-0000-000000000001 \
