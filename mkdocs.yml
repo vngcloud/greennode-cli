@@ -73,6 +73,21 @@ nav:
       - get-quota: commands/vks/get-quota.md
     - Waiter:
       - wait: commands/vks/wait.md
+  - vServer Commands:
+    - Overview: commands/vserver/index.md
+    - Server:
+      - server: commands/vserver/server.md
+    - Networking:
+      - vpc: commands/vserver/vpc.md
+      - subnet: commands/vserver/subnet.md
+    - Storage:
+      - volume: commands/vserver/volume.md
+      - volume-type: commands/vserver/volume-type.md
+    - Security:
+      - secgroup: commands/vserver/secgroup.md
+    - Discovery:
+      - flavor: commands/vserver/flavor.md
+      - image: commands/vserver/image.md
   - Development:
     - Contributing: development/contributing.md
     - Architecture & Adding a Service: development/architecture.md

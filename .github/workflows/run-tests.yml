@@ -34,4 +34,8 @@ jobs:
 
       - name: Run tests
         working-directory: go
-        run: go test ./... -v
+        # Use the external (system) linker so test binaries get an LC_UUID load
+        # command. Go 1.22's internal linker omits it, and recent macOS dyld
+        # aborts such binaries ("missing LC_UUID load command"). CGO is enabled
+        # so the system cc (present on both ubuntu and macos runners) links.
+        run: CGO_ENABLED=1 go test -ldflags='-linkmode=external' ./... -v

@@ -5,7 +5,6 @@ package cmd
 // the registry and never needs editing.
 import (
 	_ "github.com/vngcloud/greennode-cli/cmd/vks"
+	_ "github.com/vngcloud/greennode-cli/cmd/vserver"
 	_ "github.com/vngcloud/greennode-cli/internal/resources/vserver"
-	// New products add a line here, e.g.:
-	// _ "github.com/vngcloud/greennode-cli/cmd/vserver"
 )

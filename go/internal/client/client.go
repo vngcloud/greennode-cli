@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	maxRetries         = 3
-	retryBaseDelay     = 1 * time.Second
-	defaultTimeout     = 30 * time.Second
+	maxRetries     = 3
+	retryBaseDelay = 1 * time.Second
+	defaultTimeout = 30 * time.Second
 )
 
 var statusMessages = map[int]string{
@@ -175,13 +175,17 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 
 	var lastErr error
 
+	var jsonBody []byte
+	if body != nil {
+		jsonBody, err = json.Marshal(body)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal request body: %w", err)
+		}
+	}
+
 	for attempt := 0; attempt <= maxRetries; attempt++ {
 		var reqBody io.Reader
-		if body != nil {
-			jsonBody, err := json.Marshal(body)
-			if err != nil {
-				return "", fmt.Errorf("failed to marshal request body: %w", err)
-			}
+		if jsonBody != nil {
 			reqBody = bytes.NewReader(jsonBody)
 		}
 
@@ -195,8 +199,7 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 
 		if c.debug {
 			fmt.Fprintf(os.Stderr, "[debug] %s %s\n", method, fullURL)
-			if body != nil {
-				jsonBody, _ := json.Marshal(body)
+			if jsonBody != nil {
 				fmt.Fprintf(os.Stderr, "[debug] request body: %s\n", string(jsonBody))
 			}
 		}
@@ -225,8 +228,12 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 			if err != nil {
 				return "", err
 			}
-			// Retry with new token
-			req2, _ := http.NewRequest(method, fullURL, reqBody)
+			// Retry with new token; reqBody is exhausted so reset from jsonBody.
+			var retryBody io.Reader
+			if jsonBody != nil {
+				retryBody = bytes.NewReader(jsonBody)
+			}
+			req2, _ := http.NewRequest(method, fullURL, retryBody)
 			req2.Header.Set("Authorization", "Bearer "+token)
 			req2.Header.Set("Content-Type", "application/json")
 			resp2, err := c.httpClient.Do(req2)
@@ -309,4 +316,8 @@ func formatError(statusCode int, body []byte) string {
 		return fmt.Sprintf("API error (HTTP %d %s): %s", statusCode, statusText, detail)
 	}
 	return fmt.Sprintf("API error (HTTP %d %s)", statusCode, statusText)
+}
+
+func (c *GreenodeClient) DeleteWithBody(path string, body interface{}) (interface{}, error) {
+	return c.request("DELETE", path, nil, body)
 }
