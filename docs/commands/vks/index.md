@@ -55,7 +55,6 @@ grn vks <command> [options]
 | Command | Description |
 |---------|-------------|
 | [get-cluster-events](get-cluster-events.md) | Get the list of events for a cluster |
-| [get-nodegroup-events](get-nodegroup-events.md) | Get the list of events for a node group |
 
 ### Kubeconfig
 

@@ -65,7 +65,6 @@ nav:
       - config-auto-healing: commands/vks/config-auto-healing.md
     - Events:
       - get-cluster-events: commands/vks/get-cluster-events.md
-      - get-nodegroup-events: commands/vks/get-nodegroup-events.md
     - Kubeconfig:
       - generate-kubeconfig: commands/vks/generate-kubeconfig.md
       - update-kubeconfig: commands/vks/update-kubeconfig.md

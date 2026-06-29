@@ -19,11 +19,11 @@ func init() {
 	f := createNodegroupCmd.Flags()
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("name", "", "Node group name (required)")
-	f.String("os", "ubuntu", "Node group OS image (ubuntu, linux)")
+	f.String("os", "ubuntu", "Node group OS image (ubuntu, linux, rocky)")
 	f.String("flavor-id", "", "Flavor ID (required)")
 	f.String("disk-type", "", "Disk type ID (required)")
 	f.String("ssh-key-id", "", "SSH key ID (required)")
-	f.Bool("enable-private-nodes", false, "Enable private nodes")
+	f.String("private-nodes", "disabled", "Private nodes (enabled, disabled)")
 	f.Int("num-nodes", 1, "Number of nodes (0-10)")
 	f.Int("disk-size", 100, "Disk size in GiB (20-5000)")
 	f.String("security-groups", "", "Security group IDs (comma-separated)")
@@ -45,7 +45,7 @@ func runCreateNodegroup(cmd *cobra.Command, args []string) error {
 	flavorID, _ := cmd.Flags().GetString("flavor-id")
 	diskType, _ := cmd.Flags().GetString("disk-type")
 	sshKeyID, _ := cmd.Flags().GetString("ssh-key-id")
-	enablePrivateNodes, _ := cmd.Flags().GetBool("enable-private-nodes")
+	privateNodesVal, _ := cmd.Flags().GetString("private-nodes")
 	numNodes, _ := cmd.Flags().GetInt("num-nodes")
 	diskSize, _ := cmd.Flags().GetInt("disk-size")
 	securityGroups, _ := cmd.Flags().GetString("security-groups")
@@ -56,6 +56,11 @@ func runCreateNodegroup(cmd *cobra.Command, args []string) error {
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
+		return err
+	}
+
+	enablePrivateNodes, err := parseToggle("private-nodes", privateNodesVal)
+	if err != nil {
 		return err
 	}
 

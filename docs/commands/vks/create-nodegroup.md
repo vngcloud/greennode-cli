@@ -16,7 +16,7 @@ grn vks create-nodegroup
     --flavor-id <value>
     --disk-type <value>
     --ssh-key-id <value>
-    [--enable-private-nodes]
+    [--private-nodes <enabled|disabled>]
     [--num-nodes <value>]
     [--disk-size <value>]
     [--security-groups <value>]
@@ -36,7 +36,7 @@ grn vks create-nodegroup
 : Node group name. Must be 5–15 characters, lowercase alphanumeric and hyphens, starting and ending with an alphanumeric character.
 
 `--os` (optional, default `ubuntu`)
-: Node group OS image. Supported values: `ubuntu`, `linux`.
+: Node group OS image. Supported values: `ubuntu`, `linux`, `rocky`.
 
 `--flavor-id` (required)
 : Flavor (instance type) ID for the nodes.
@@ -47,8 +47,8 @@ grn vks create-nodegroup
 `--ssh-key-id` (required)
 : SSH key pair ID to inject into each node.
 
-`--enable-private-nodes` (optional)
-: Enable private nodes (nodes will not have public IP addresses).
+`--private-nodes` (optional, default `disabled`)
+: Private nodes state. `enabled` means nodes will not have public IP addresses. Accepted values: `enabled`, `disabled`.
 
 `--num-nodes` (optional)
 : Number of nodes to create. Accepted range: 0–10. Default: `1`.

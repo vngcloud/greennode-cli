@@ -49,7 +49,6 @@ func init() {
 	VksCmd.AddCommand(listClusterVersionsCmd)
 	VksCmd.AddCommand(upgradeNodegroupVersionCmd)
 	VksCmd.AddCommand(getClusterEventsCmd)
-	VksCmd.AddCommand(getNodegroupEventsCmd)
 
 	// Kubeconfig commands
 	VksCmd.AddCommand(generateKubeconfigCmd)

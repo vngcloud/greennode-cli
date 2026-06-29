@@ -13,10 +13,8 @@ grn vks update-cluster
     --cluster-id <value>
     --k8s-version <value>
     --whitelist-node-cidrs <value>
-    [--enabled-load-balancer-plugin]
-    [--no-load-balancer-plugin]
-    [--enabled-block-store-csi-plugin]
-    [--no-block-store-csi-plugin]
+    [--load-balancer-plugin <enabled|disabled>]
+    [--block-store-csi-plugin <enabled|disabled>]
     [--dry-run]
 ```
 
@@ -31,17 +29,11 @@ grn vks update-cluster
 `--whitelist-node-cidrs` (required)
 : Comma-separated list of CIDRs allowed to communicate with cluster nodes. At least one value is required (e.g. `10.0.0.0/8,192.168.0.0/16`).
 
-`--enabled-load-balancer-plugin` (optional)
-: Enable the load balancer plugin.
+`--load-balancer-plugin` (optional)
+: Set the load balancer plugin state. When omitted, the current state is left unchanged. Accepted values: `enabled`, `disabled`.
 
-`--no-load-balancer-plugin` (optional)
-: Disable the load balancer plugin.
-
-`--enabled-block-store-csi-plugin` (optional)
-: Enable the block store CSI plugin.
-
-`--no-block-store-csi-plugin` (optional)
-: Disable the block store CSI plugin.
+`--block-store-csi-plugin` (optional)
+: Set the block store CSI plugin state. When omitted, the current state is left unchanged. Accepted values: `enabled`, `disabled`.
 
 `--dry-run` (optional)
 : Print the update payload without sending the request.
@@ -64,7 +56,7 @@ grn vks update-cluster \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --k8s-version v1.29.1 \
   --whitelist-node-cidrs 10.0.0.0/8 \
-  --no-load-balancer-plugin
+  --load-balancer-plugin disabled
 ```
 
 Preview what would be sent (dry run):
