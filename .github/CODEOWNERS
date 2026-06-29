@@ -15,9 +15,8 @@
 /CLAUDE.md           @vngcloud/platform
 
 # Product CLIs — owned by their product teams.
-/go/cmd/vks/         @vngcloud/vks
-/docs/commands/vks/  @vngcloud/vks
-
-# When a new product joins, add e.g.:
-# /go/cmd/vserver/        @vngcloud/vserver
-# /docs/commands/vserver/ @vngcloud/vserver
+/go/cmd/vks/             @vngcloud/vks
+/docs/commands/vks/      @vngcloud/vks
+/go/cmd/vserver/            @vngcloud/vserver
+/go/internal/vserverclient/ @vngcloud/vserver
+/docs/commands/vserver/     @vngcloud/vserver
