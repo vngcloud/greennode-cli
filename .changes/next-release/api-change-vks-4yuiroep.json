@@ -1,5 +1,0 @@
-{
-  "type": "api-change",
-  "category": "vks",
-  "description": "Align node group commands with latest API: remove --image-id (no longer in the API), add --os (ubuntu/linux, default ubuntu) for create-cluster/create-nodegroup; update-nodegroup no longer requires/sends image"
-}
