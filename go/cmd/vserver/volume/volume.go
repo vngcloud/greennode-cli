@@ -9,6 +9,7 @@ var VolumeCmd = &cobra.Command{
 	Use:   "volume",
 	Short: "Manage vServer volumes",
 	Long:  "Create, list, get, and delete vServer block storage volumes.\n\nTo see available volume types for a zone, run: grn vserver volume-type list",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

@@ -9,6 +9,7 @@ var RuleCmd = &cobra.Command{
 	Use:   "rule",
 	Short: "Manage security group rules",
 	Long:  "Create, list, and delete rules within a security group.",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

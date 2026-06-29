@@ -9,6 +9,7 @@ var ServerCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Manage vServer instances",
 	Long:  "Create, list, get, and manage vServer instances.",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

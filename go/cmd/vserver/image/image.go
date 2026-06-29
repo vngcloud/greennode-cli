@@ -9,6 +9,7 @@ var ImageCmd = &cobra.Command{
 	Use:   "image",
 	Short: "Manage vServer images",
 	Long:  "List available vServer images by type (os, gpu).",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

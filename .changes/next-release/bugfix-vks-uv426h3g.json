@@ -1,0 +1,5 @@
+{
+  "type": "bugfix",
+  "category": "vks",
+  "description": "Return a non-zero exit code and 'unknown command' error for invalid subcommands of grn vks/vserver (and their groups) instead of silently printing help with exit 0"
+}

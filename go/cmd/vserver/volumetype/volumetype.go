@@ -9,6 +9,7 @@ var VolumeTypeCmd = &cobra.Command{
 	Use:   "volume-type",
 	Short: "Manage vServer volume types",
 	Long:  "List available volume types for a zone.",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
