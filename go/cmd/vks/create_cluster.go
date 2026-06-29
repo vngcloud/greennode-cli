@@ -26,11 +26,11 @@ func init() {
 	// Node group settings (required)
 	f.String("node-group-name", "", "Default node group name (required)")
 	f.String("flavor-id", "", "Flavor ID for node group (required)")
-	f.String("image-id", "", "Image ID for node group (required)")
+	f.String("os", "ubuntu", "Node group OS image (ubuntu, linux)")
 	f.String("disk-type", "", "Disk type ID (required)")
 	f.String("ssh-key-id", "", "SSH key ID for node group (required)")
 
-	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id", "subnet-id", "node-group-name", "flavor-id", "image-id", "disk-type", "ssh-key-id"} {
+	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id", "subnet-id", "node-group-name", "flavor-id", "disk-type", "ssh-key-id"} {
 		createClusterCmd.MarkFlagRequired(name)
 	}
 
@@ -67,7 +67,7 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 
 	ngName, _ := cmd.Flags().GetString("node-group-name")
 	flavorID, _ := cmd.Flags().GetString("flavor-id")
-	imageID, _ := cmd.Flags().GetString("image-id")
+	osImage, _ := cmd.Flags().GetString("os")
 	diskType, _ := cmd.Flags().GetString("disk-type")
 	sshKeyID, _ := cmd.Flags().GetString("ssh-key-id")
 	diskSize, _ := cmd.Flags().GetInt("disk-size")
@@ -82,7 +82,7 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	nodeGroup := map[string]interface{}{
 		"name":               ngName,
 		"flavorId":           flavorID,
-		"imageId":            imageID,
+		"os":                 osImage,
 		"diskSize":           diskSize,
 		"diskType":           diskType,
 		"numNodes":           numNodes,

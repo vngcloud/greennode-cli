@@ -2,7 +2,7 @@
 
 ## Description
 
-Update a node group's image, node count, security groups, labels, taints, auto-scaling configuration, and upgrade strategy. The image ID is always required by the API, even when the intent is to update only other fields.
+Update a node group's node count, security groups, labels, taints, auto-scaling configuration, and upgrade strategy.
 
 Use `--dry-run` to preview the update payload without executing it.
 
@@ -12,7 +12,6 @@ Use `--dry-run` to preview the update payload without executing it.
 grn vks update-nodegroup
     --cluster-id <value>
     --nodegroup-id <value>
-    --image-id <value>
     [--num-nodes <value>]
     [--security-groups <value>]
     [--labels <value>]
@@ -32,9 +31,6 @@ grn vks update-nodegroup
 
 `--nodegroup-id` (required)
 : ID of the node group to update.
-
-`--image-id` (required)
-: OS image ID. Always required by the API — pass the current image ID to leave it unchanged.
 
 `--num-nodes` (optional)
 : New desired number of nodes for the node group.
@@ -74,17 +70,15 @@ Scale a node group to 5 nodes:
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s \
   --num-nodes 5
 ```
 
-Update node image and set auto-scaling limits:
+Set auto-scaling limits:
 
 ```bash
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s-v2 \
   --auto-scale-min 2 \
   --auto-scale-max 10
 ```
@@ -95,7 +89,6 @@ Update labels and taints:
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s \
   --labels env=prod,tier=app \
   --taints dedicated=gpu:NoSchedule
 ```
@@ -106,7 +99,6 @@ Preview the update payload (dry run):
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s \
   --num-nodes 3 \
   --dry-run
 ```

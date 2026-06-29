@@ -18,7 +18,6 @@ func init() {
 	f := updateNodegroupCmd.Flags()
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("nodegroup-id", "", "Node group ID (required)")
-	f.String("image-id", "", "Image ID (required)")
 	f.String("num-nodes", "", "New number of nodes")
 	f.String("security-groups", "", "Security group IDs (comma-separated)")
 	f.String("labels", "", "Node labels as key=value pairs (comma-separated)")
@@ -32,13 +31,11 @@ func init() {
 
 	updateNodegroupCmd.MarkFlagRequired("cluster-id")
 	updateNodegroupCmd.MarkFlagRequired("nodegroup-id")
-	updateNodegroupCmd.MarkFlagRequired("image-id")
 }
 
 func runUpdateNodegroup(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	nodegroupID, _ := cmd.Flags().GetString("nodegroup-id")
-	imageID, _ := cmd.Flags().GetString("image-id")
 	numNodes, _ := cmd.Flags().GetString("num-nodes")
 	securityGroups, _ := cmd.Flags().GetString("security-groups")
 	labelsStr, _ := cmd.Flags().GetString("labels")
@@ -57,9 +54,7 @@ func runUpdateNodegroup(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	body := map[string]interface{}{
-		"imageId": imageID,
-	}
+	body := map[string]interface{}{}
 
 	if numNodes != "" {
 		body["numNodes"] = toInt(numNodes)
@@ -97,6 +92,10 @@ func runUpdateNodegroup(cmd *cobra.Command, args []string) error {
 			upgradeConfig["maxUnavailable"] = toInt(upgradeMaxUnavail)
 		}
 		body["upgradeConfig"] = upgradeConfig
+	}
+
+	if len(body) == 0 {
+		return fmt.Errorf("nothing to update: provide at least one of --num-nodes, --security-groups, --labels, --taints, --auto-scale-min/max, or --upgrade-strategy/max-surge/max-unavailable")
 	}
 
 	if dryRun {

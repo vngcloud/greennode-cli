@@ -21,7 +21,7 @@ grn vks create-cluster
     --subnet-id <value>
     --node-group-name <value>
     --flavor-id <value>
-    --image-id <value>
+    [--os <value>]
     --disk-type <value>
     --ssh-key-id <value>
     [--cidr <value>]
@@ -92,8 +92,8 @@ grn vks create-cluster
 `--flavor-id` (required)
 : Flavor (instance type) ID for the nodes.
 
-`--image-id` (required)
-: OS image ID for the nodes.
+`--os` (optional, default `ubuntu`)
+: Node group OS image. Supported values: `ubuntu`, `linux`.
 
 `--disk-type` (required)
 : Disk type ID for the node boot volumes.
@@ -135,7 +135,7 @@ grn vks create-cluster \
   --subnet-id sub-abc12345-0000-0000-0000-000000000001 \
   --node-group-name default-ng \
   --flavor-id flv-2c4g \
-  --image-id img-ubuntu-22-04-k8s \
+  --os ubuntu \
   --disk-type SSD \
   --ssh-key-id key-abc12345-0000-0000-0000-000000000001
 ```
@@ -152,7 +152,7 @@ grn vks create-cluster \
   --subnet-id sub-abc12345-0000-0000-0000-000000000001 \
   --node-group-name prod-ng \
   --flavor-id flv-4c8g \
-  --image-id img-ubuntu-22-04-k8s \
+  --os ubuntu \
   --disk-type SSD \
   --disk-size 200 \
   --num-nodes 3 \
@@ -172,7 +172,7 @@ grn vks create-cluster \
   --subnet-id sub-abc12345-0000-0000-0000-000000000001 \
   --node-group-name default-ng \
   --flavor-id flv-2c4g \
-  --image-id img-ubuntu-22-04-k8s \
+  --os ubuntu \
   --disk-type SSD \
   --ssh-key-id key-abc12345-0000-0000-0000-000000000001 \
   --dry-run

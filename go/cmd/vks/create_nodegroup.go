@@ -19,7 +19,7 @@ func init() {
 	f := createNodegroupCmd.Flags()
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("name", "", "Node group name (required)")
-	f.String("image-id", "", "Image ID (required)")
+	f.String("os", "ubuntu", "Node group OS image (ubuntu, linux)")
 	f.String("flavor-id", "", "Flavor ID (required)")
 	f.String("disk-type", "", "Disk type ID (required)")
 	f.String("ssh-key-id", "", "SSH key ID (required)")
@@ -33,7 +33,7 @@ func init() {
 	f.Bool("enable-encryption-volume", false, "Enable volume encryption")
 	f.Bool("dry-run", false, "Validate parameters without creating")
 
-	for _, name := range []string{"cluster-id", "name", "image-id", "flavor-id", "disk-type", "ssh-key-id"} {
+	for _, name := range []string{"cluster-id", "name", "flavor-id", "disk-type", "ssh-key-id"} {
 		createNodegroupCmd.MarkFlagRequired(name)
 	}
 }
@@ -41,7 +41,7 @@ func init() {
 func runCreateNodegroup(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	name, _ := cmd.Flags().GetString("name")
-	imageID, _ := cmd.Flags().GetString("image-id")
+	osImage, _ := cmd.Flags().GetString("os")
 	flavorID, _ := cmd.Flags().GetString("flavor-id")
 	diskType, _ := cmd.Flags().GetString("disk-type")
 	sshKeyID, _ := cmd.Flags().GetString("ssh-key-id")
@@ -62,7 +62,7 @@ func runCreateNodegroup(cmd *cobra.Command, args []string) error {
 	body := map[string]interface{}{
 		"name":                    name,
 		"numNodes":                numNodes,
-		"imageId":                 imageID,
+		"os":                      osImage,
 		"flavorId":                flavorID,
 		"diskSize":                diskSize,
 		"diskType":                diskType,
