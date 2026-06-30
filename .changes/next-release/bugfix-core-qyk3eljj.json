@@ -1,5 +1,0 @@
-{
-  "type": "bugfix",
-  "category": "core",
-  "description": "Honor --cli-connect-timeout: the TCP connect and TLS handshake are now bounded by the flag (previously it was accepted but ignored, so a slow/unreachable endpoint hung for ~127s regardless). Wired via the HTTP transport's dialer in both VKS and vServer clients"
-}

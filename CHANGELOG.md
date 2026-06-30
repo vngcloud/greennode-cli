@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.1
+
+### Enhancements
+* **core**: On error, print a single concise 'Error: ...' line instead of cobra's duplicated error plus a full usage dump (use 'grn <command> --help' for usage)
+* **vks**: Document the --unhealthy-range format in config-auto-healing help: expects "[min-max]" (e.g. "[2-5]")
+
+### Bug Fixes
+* **configure**: Fix panic (nil pointer) when running 'grn configure set/list --profile <name>' for a profile that does not exist yet. LoadConfig now reads the credentials and config files independently, so a profile created via 'configure set' (config file only) loads its region/output/project_id correctly, and 'configure get'/'configure list' on a truly missing profile report a clear 'profile does not exist' error (exit 1, like 'aws configure') instead of crashing
+* **core**: Honor --cli-connect-timeout: the TCP connect and TLS handshake are now bounded by the flag (previously it was accepted but ignored, so a slow/unreachable endpoint hung for ~127s regardless). Wired via the HTTP transport's dialer in both VKS and vServer clients
+* **output**: Reject an invalid --output or --color value (e.g. a typo like 'tabel') with a clear error, a 'maybe you meant' suggestion, and a non-zero exit, instead of silently falling back
+
 ## 1.3.0
 
 ### Features
