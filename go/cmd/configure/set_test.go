@@ -42,14 +42,16 @@ func TestSetRegionOnNonExistentProfile(t *testing.T) {
 	}
 }
 
-// Regression: `configure list --profile <new>` for an unknown profile must not
-// panic and should render unset values.
-func TestListOnNonExistentProfile(t *testing.T) {
+// On a fresh machine (no config files at all) `configure list` must not panic
+// and renders unset defaults — matching `aws configure list`. (A profile that
+// is missing while config files DO exist exits non-zero via os.Exit, which is
+// covered by the binary-level checks rather than here.)
+func TestListOnFreshMachineNoFiles(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 
 	root := newConfigureTestCmd()
 	root.SetArgs([]string{"configure", "list", "--profile", "ghost"})
 	if err := root.Execute(); err != nil {
-		t.Fatalf("list on new profile failed: %v", err)
+		t.Fatalf("list on fresh machine failed: %v", err)
 	}
 }

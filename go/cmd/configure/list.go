@@ -31,10 +31,15 @@ func runList(cmd *cobra.Command, args []string) {
 		profile = "default"
 	}
 
-	// A non-existent profile yields (nil, err); fall back to empty defaults so
-	// list shows unset values instead of panicking.
+	// Report a missing profile like `aws configure list` does, rather than
+	// printing empty values. LoadConfig only errors when config files exist but
+	// the profile is in neither — a fresh machine still lists unset defaults.
 	cfg, err := config.LoadConfig(profile)
-	if err != nil || cfg == nil {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+	if cfg == nil {
 		cfg = &config.Config{}
 	}
 	configDir := config.DefaultConfigDir()
