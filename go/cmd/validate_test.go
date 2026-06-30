@@ -45,6 +45,21 @@ func TestValidateOutputFormatUnknownNoSuggestion(t *testing.T) {
 	}
 }
 
+func TestValidateChoiceColor(t *testing.T) {
+	for _, v := range []string{"on", "off", "auto", ""} {
+		if err := validateChoice("color mode", v, validColorModes); err != nil {
+			t.Errorf("%q should be valid, got %v", v, err)
+		}
+	}
+	err := validateChoice("color mode", "atuo", validColorModes)
+	if err == nil {
+		t.Fatal("typo 'atuo' should be rejected")
+	}
+	if !strings.Contains(err.Error(), "auto") {
+		t.Errorf("error should suggest 'auto', got %q", err.Error())
+	}
+}
+
 func TestSuggestClosest(t *testing.T) {
 	opts := []string{"json", "text", "table"}
 	cases := map[string]string{

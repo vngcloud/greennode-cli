@@ -8,15 +8,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var validOutputFormats = []string{"json", "text", "table"}
+var (
+	validOutputFormats = []string{"json", "text", "table"}
+	validColorModes    = []string{"on", "off", "auto"}
+)
 
 // validateGlobalFlags rejects invalid values for global flags before any work
-// runs, mirroring `aws`/`gcloud` which fail fast on an unknown --output instead
-// of silently falling back. Only validates flags the user explicitly set.
+// runs, mirroring `aws`/`gcloud` which fail fast on an unknown value instead of
+// silently falling back. Only validates flags the user explicitly set.
 func validateGlobalFlags(cmd *cobra.Command) error {
-	if cmd.Flags().Changed("output") {
-		v, _ := cmd.Flags().GetString("output")
-		if err := validateOutputFormat(v); err != nil {
+	checks := []struct {
+		flag  string
+		label string
+		valid []string
+	}{
+		{"output", "output format", validOutputFormats},
+		{"color", "color mode", validColorModes},
+	}
+	for _, c := range checks {
+		if !cmd.Flags().Changed(c.flag) {
+			continue
+		}
+		v, _ := cmd.Flags().GetString(c.flag)
+		if err := validateChoice(c.label, v, c.valid); err != nil {
 			return err
 		}
 	}
@@ -24,20 +38,27 @@ func validateGlobalFlags(cmd *cobra.Command) error {
 }
 
 // validateOutputFormat returns an error when value is a non-empty,
-// unrecognized output format. The message echoes the bad value, suggests the
-// closest valid format when one is near, and always lists the valid formats.
+// unrecognized output format.
 func validateOutputFormat(value string) error {
+	return validateChoice("output format", value, validOutputFormats)
+}
+
+// validateChoice returns an error when value is non-empty and not one of valid.
+// The message echoes the bad value, suggests the closest valid option when one
+// is near, and always lists the valid options. label names the thing being
+// validated (e.g. "output format").
+func validateChoice(label, value string, valid []string) error {
 	if value == "" {
 		return nil
 	}
-	if slices.Contains(validOutputFormats, value) {
+	if slices.Contains(valid, value) {
 		return nil
 	}
-	msg := fmt.Sprintf("invalid output format: '%s'", value)
-	if s := suggestClosest(value, validOutputFormats); s != "" {
+	msg := fmt.Sprintf("invalid %s: '%s'", label, value)
+	if s := suggestClosest(value, valid); s != "" {
 		msg += fmt.Sprintf(", maybe you meant '%s'", s)
 	}
-	msg += fmt.Sprintf(" (valid formats: %s)", strings.Join(validOutputFormats, ", "))
+	msg += fmt.Sprintf(" (valid values: %s)", strings.Join(valid, ", "))
 	return fmt.Errorf("%s", msg)
 }
 
