@@ -1,0 +1,5 @@
+{
+  "type": "enhancement",
+  "category": "vks",
+  "description": "Document the --unhealthy-range format in config-auto-healing help: expects \"[min-max]\" (e.g. \"[2-5]\")"
+}

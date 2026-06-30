@@ -1,0 +1,5 @@
+{
+  "type": "bugfix",
+  "category": "configure",
+  "description": "Fix panic (nil pointer) when running 'grn configure set/list --profile <name>' for a profile that does not exist yet. LoadConfig now reads the credentials and config files independently, so a profile created via 'configure set' (config file only) loads its region/output/project_id correctly, and 'configure get'/'configure list' on a truly missing profile report a clear 'profile does not exist' error (exit 1, like 'aws configure') instead of crashing"
+}

@@ -19,6 +19,7 @@ func BuildClient(cmd *cobra.Command) (*client.GreenodeClient, *config.Config, er
 	endpointURL, _ := cmd.Flags().GetString("endpoint-url")
 	noVerifySSL, _ := cmd.Flags().GetBool("no-verify-ssl")
 	debug, _ := cmd.Flags().GetBool("debug")
+	connectTimeout, _ := cmd.Flags().GetInt("cli-connect-timeout")
 	readTimeout, _ := cmd.Flags().GetInt("cli-read-timeout")
 
 	cfg, err := config.LoadConfig(profile)
@@ -49,9 +50,10 @@ func BuildClient(cmd *cobra.Command) (*client.GreenodeClient, *config.Config, er
 	}
 
 	tokenManager := auth.NewTokenManager(cfg.ClientID, cfg.ClientSecret)
-	timeout := time.Duration(readTimeout) * time.Second
+	connect := time.Duration(connectTimeout) * time.Second
+	read := time.Duration(readTimeout) * time.Second
 
-	return client.NewGreenodeClient(baseURL, tokenManager, timeout, !noVerifySSL, debug), cfg, nil
+	return client.NewGreenodeClient(baseURL, tokenManager, connect, read, !noVerifySSL, debug), cfg, nil
 }
 
 // ProjectID extracts and validates the project ID from config.

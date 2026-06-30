@@ -1,0 +1,5 @@
+{
+  "type": "enhancement",
+  "category": "core",
+  "description": "On error, print a single concise 'Error: ...' line instead of cobra's duplicated error plus a full usage dump (use 'grn <command> --help' for usage)"
+}

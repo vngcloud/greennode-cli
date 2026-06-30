@@ -31,6 +31,10 @@ var rootCmd = &cobra.Command{
 	Use:     "grn",
 	Short:   "GreenNode CLI - unified command-line tool for GreenNode (VNG Cloud) services",
 	Version: fmt.Sprintf("%s Go/%s %s/%s", cliVersion, runtime.Version()[2:], runtime.GOOS, runtime.GOARCH),
+	// Print a single clean "Error: ..." line on failure (done in Execute) rather
+	// than cobra's error plus a full usage dump.
+	SilenceErrors: true,
+	SilenceUsage:  true,
 	Long: `GreenNode CLI (grn) is a unified command-line tool for managing
 GreenNode (VNG Cloud) services including VKS (VNG Kubernetes Service).
 
@@ -39,6 +43,11 @@ To get started, run:
 
 For help on any command:
   grn <command> --help`,
+	// Validate global flags up front so an invalid --output fails fast with a
+	// suggestion, rather than silently falling back to JSON.
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return validateGlobalFlags(cmd)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -72,7 +81,7 @@ func init() {
 // Execute runs the root command.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }
