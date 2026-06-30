@@ -54,6 +54,13 @@ func LoadConfig(profile string) (*Config, error) {
 		Regions: REGIONS,
 	}
 
+	// A profile "exists" if it has a section in the credentials file, the config
+	// file, or credentials are supplied via env vars. credentials and config are
+	// read independently so a profile created by `configure set region` (config
+	// file only, no credentials yet) still loads instead of erroring.
+	foundProfile := false
+	anyFileExists := false
+
 	// Load credentials — env vars override file
 	if v := os.Getenv("GRN_ACCESS_KEY_ID"); v != "" {
 		cfg.ClientID = v
@@ -61,30 +68,36 @@ func LoadConfig(profile string) (*Config, error) {
 	if v := os.Getenv("GRN_SECRET_ACCESS_KEY"); v != "" {
 		cfg.ClientSecret = v
 	}
+	if cfg.ClientID != "" && cfg.ClientSecret != "" {
+		foundProfile = true
+	}
 
 	if cfg.ClientID == "" || cfg.ClientSecret == "" {
 		credsFile := filepath.Join(configDir, "credentials")
 		if _, err := os.Stat(credsFile); err == nil {
+			anyFileExists = true
 			iniCreds, err := ini.Load(credsFile)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse credentials file: %w", err)
 			}
-			section, err := iniCreds.GetSection(profile)
-			if err != nil {
-				return nil, fmt.Errorf("profile '%s' does not exist in %s", profile, credsFile)
-			}
-			if cfg.ClientID == "" {
-				cfg.ClientID = section.Key("client_id").String()
-			}
-			if cfg.ClientSecret == "" {
-				cfg.ClientSecret = section.Key("client_secret").String()
+			// Missing section is not fatal — the profile may live in the config
+			// file only. Just skip credentials for this profile.
+			if section, err := iniCreds.GetSection(profile); err == nil {
+				foundProfile = true
+				if cfg.ClientID == "" {
+					cfg.ClientID = section.Key("client_id").String()
+				}
+				if cfg.ClientSecret == "" {
+					cfg.ClientSecret = section.Key("client_secret").String()
+				}
 			}
 		}
 	}
 
-	// Load config file
+	// Load config file (independent of credentials)
 	configFile := filepath.Join(configDir, "config")
 	if _, err := os.Stat(configFile); err == nil {
+		anyFileExists = true
 		iniCfg, err := ini.Load(configFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse config file: %w", err)
@@ -95,12 +108,15 @@ func LoadConfig(profile string) (*Config, error) {
 			sectionName = "profile " + profile
 		}
 
-		section, err := iniCfg.GetSection(sectionName)
-		if err != nil && profile == "default" {
-			// Try DEFAULT section for default profile
-			section = iniCfg.Section("")
+		section, serr := iniCfg.GetSection(sectionName)
+		if serr != nil && profile == "default" {
+			// Try the root DEFAULT section for the default profile.
+			if root := iniCfg.Section(ini.DefaultSection); len(root.Keys()) > 0 {
+				section, serr = root, nil
+			}
 		}
-		if section != nil {
+		if serr == nil && section != nil {
+			foundProfile = true
 			if v := section.Key("region").String(); v != "" {
 				cfg.Region = v
 			}
@@ -111,6 +127,13 @@ func LoadConfig(profile string) (*Config, error) {
 				cfg.ProjectID = v
 			}
 		}
+	}
+
+	// Config files exist but the profile is in neither — report it like
+	// `aws configure` does ("profile could not be found") so reads (get/list)
+	// and API clients fail clearly instead of acting on empty config.
+	if anyFileExists && !foundProfile {
+		return nil, fmt.Errorf("profile '%s' does not exist (run 'grn configure --profile %s' to create it)", profile, profile)
 	}
 
 	// Env var overrides for region
