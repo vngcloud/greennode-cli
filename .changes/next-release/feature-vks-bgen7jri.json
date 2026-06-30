@@ -1,0 +1,5 @@
+{
+  "type": "feature",
+  "category": "vks",
+  "description": "Add struct-valued flags (shorthand or JSON) to create-nodegroup: --tags, --secondary-subnets, --auto-scale, --placement-group, --upgrade-config"
+}

@@ -1,0 +1,5 @@
+{
+  "type": "api-change",
+  "category": "vks",
+  "description": "update-nodegroup: drop deprecated --labels/--taints (use update-nodegroup-metadata); replace --auto-scale-min/max and --upgrade-strategy/max-surge/max-unavailable with struct flags --auto-scale and --upgrade-config"
+}
