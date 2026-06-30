@@ -1,0 +1,5 @@
+{
+  "type": "bugfix",
+  "category": "output",
+  "description": "Reject an invalid --output value (e.g. a typo like 'tabel') with a clear error, a 'maybe you meant' suggestion, and a non-zero exit, instead of silently falling back to JSON"
+}

@@ -39,6 +39,11 @@ To get started, run:
 
 For help on any command:
   grn <command> --help`,
+	// Validate global flags up front so an invalid --output fails fast with a
+	// suggestion, rather than silently falling back to JSON.
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return validateGlobalFlags(cmd)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
