@@ -2,7 +2,9 @@
 
 ## Description
 
-Update a node group's node count, security groups, labels, taints, auto-scaling configuration, and upgrade strategy.
+Update a node group's node count, security groups, auto-scaling configuration, and upgrade configuration.
+
+To update labels, tags, or taints, use `grn vks update-nodegroup-metadata` — those fields are deprecated on `update-nodegroup`.
 
 Use `--dry-run` to preview the update payload without executing it.
 
@@ -14,13 +16,8 @@ grn vks update-nodegroup
     --nodegroup-id <value>
     [--num-nodes <value>]
     [--security-groups <value>]
-    [--labels <value>]
-    [--taints <value>]
-    [--auto-scale-min <value>]
-    [--auto-scale-max <value>]
-    [--upgrade-strategy <value>]
-    [--upgrade-max-surge <value>]
-    [--upgrade-max-unavailable <value>]
+    [--auto-scale <value>]
+    [--upgrade-config <value>]
     [--dry-run]
 ```
 
@@ -38,26 +35,11 @@ grn vks update-nodegroup
 `--security-groups` (optional)
 : Comma-separated list of security group IDs to replace the current set.
 
-`--labels` (optional)
-: Comma-separated `key=value` pairs to set as Kubernetes node labels (replaces existing labels).
+`--auto-scale` (optional)
+: Auto-scale configuration. Shorthand `minSize=2,maxSize=10` or JSON `{"minSize":2,"maxSize":10}`.
 
-`--taints` (optional)
-: Comma-separated node taints in `key=value:effect` format (replaces existing taints).
-
-`--auto-scale-min` (optional)
-: Minimum number of nodes for the auto-scaler.
-
-`--auto-scale-max` (optional)
-: Maximum number of nodes for the auto-scaler.
-
-`--upgrade-strategy` (optional)
-: Node upgrade strategy. Accepted value: `SURGE`.
-
-`--upgrade-max-surge` (optional)
-: Maximum number of extra nodes to create during a surge upgrade.
-
-`--upgrade-max-unavailable` (optional)
-: Maximum number of nodes that may be unavailable during an upgrade.
+`--upgrade-config` (optional)
+: Upgrade configuration. Shorthand `maxSurge=1,maxUnavailable=0,strategy=SURGE` or JSON `{"maxSurge":1,"maxUnavailable":0,"strategy":"SURGE"}`.
 
 `--dry-run` (optional)
 : Print the update payload without sending the request.
@@ -73,20 +55,28 @@ grn vks update-nodegroup \
   --num-nodes 5
 ```
 
-Set auto-scaling limits:
+Set auto-scaling limits (shorthand or JSON):
 
 ```bash
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --auto-scale-min 2 \
-  --auto-scale-max 10
+  --auto-scale minSize=2,maxSize=10
 ```
 
-Update labels and taints:
+Set the upgrade configuration:
 
 ```bash
 grn vks update-nodegroup \
+  --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
+  --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
+  --upgrade-config '{"maxSurge":2,"maxUnavailable":1,"strategy":"SURGE"}'
+```
+
+To update labels, tags, or taints, use `update-nodegroup-metadata` (those fields are deprecated on `update-nodegroup`):
+
+```bash
+grn vks update-nodegroup-metadata \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
   --labels env=prod,tier=app \

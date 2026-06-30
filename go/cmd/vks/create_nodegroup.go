@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -31,6 +32,11 @@ func init() {
 	f.String("labels", "", "Node labels as key=value pairs (comma-separated)")
 	f.String("taints", "", "Node taints as key=value:effect (comma-separated)")
 	f.Bool("enable-encryption-volume", false, "Enable volume encryption")
+	f.String("tags", "", "Node group tags as key=value pairs (comma-separated)")
+	f.String("secondary-subnets", "", "Secondary subnet IDs (comma-separated)")
+	f.String("auto-scale", "", "Auto-scale config (shorthand minSize=2,maxSize=10 or JSON)")
+	f.String("placement-group", "", "Placement group config (shorthand type=NEW,placementGroupName=pg or JSON)")
+	f.String("upgrade-config", "", "Upgrade config (shorthand maxSurge=1,maxUnavailable=0,strategy=SURGE or JSON); default SURGE 1/0")
 	f.Bool("dry-run", false, "Validate parameters without creating")
 
 	for _, name := range []string{"cluster-id", "name", "flavor-id", "disk-type", "ssh-key-id"} {
@@ -54,6 +60,11 @@ func runCreateNodegroup(cmd *cobra.Command, args []string) error {
 	taintsStr, _ := cmd.Flags().GetString("taints")
 	enableEncryption, _ := cmd.Flags().GetBool("enable-encryption-volume")
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
+	tagsStr, _ := cmd.Flags().GetString("tags")
+	secondarySubnets, _ := cmd.Flags().GetString("secondary-subnets")
+	autoScaleStr, _ := cmd.Flags().GetString("auto-scale")
+	placementGroupStr, _ := cmd.Flags().GetString("placement-group")
+	upgradeConfigStr, _ := cmd.Flags().GetString("upgrade-config")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
 		return err
@@ -93,6 +104,33 @@ func runCreateNodegroup(cmd *cobra.Command, args []string) error {
 	}
 	if taintsStr != "" {
 		body["taints"] = parseTaints(taintsStr)
+	}
+	if tagsStr != "" {
+		body["tags"] = parseLabels(tagsStr)
+	}
+	if secondarySubnets != "" {
+		body["secondarySubnets"] = parseCommaSeparated(secondarySubnets)
+	}
+	if autoScaleStr != "" {
+		asc, err := cli.ParseStructFlag(autoScaleStr, "minSize", "maxSize")
+		if err != nil {
+			return fmt.Errorf("--auto-scale: %w", err)
+		}
+		body["autoScaleConfig"] = asc
+	}
+	if placementGroupStr != "" {
+		pg, err := cli.ParseStructFlag(placementGroupStr)
+		if err != nil {
+			return fmt.Errorf("--placement-group: %w", err)
+		}
+		body["placementGroupConfigDto"] = pg
+	}
+	if upgradeConfigStr != "" {
+		uc, err := cli.ParseStructFlag(upgradeConfigStr, "maxSurge", "maxUnavailable")
+		if err != nil {
+			return fmt.Errorf("--upgrade-config: %w", err)
+		}
+		body["upgradeConfig"] = uc
 	}
 
 	if dryRun {

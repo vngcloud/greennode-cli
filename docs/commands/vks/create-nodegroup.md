@@ -23,6 +23,11 @@ grn vks create-nodegroup
     [--subnet-id <value>]
     [--labels <value>]
     [--taints <value>]
+    [--tags <value>]
+    [--secondary-subnets <value>]
+    [--auto-scale <value>]
+    [--placement-group <value>]
+    [--upgrade-config <value>]
     [--enable-encryption-volume]
     [--dry-run]
 ```
@@ -68,6 +73,21 @@ grn vks create-nodegroup
 `--taints` (optional)
 : Comma-separated node taints in `key=value:effect` format (e.g. `dedicated=gpu:NoSchedule`).
 
+`--tags` (optional)
+: Comma-separated `key=value` pairs to attach as node group tags (e.g. `team=platform,cost-center=42`).
+
+`--secondary-subnets` (optional)
+: Comma-separated list of secondary subnet IDs for the node group.
+
+`--auto-scale` (optional)
+: Auto-scale configuration. Shorthand `minSize=2,maxSize=10` or JSON `{"minSize":2,"maxSize":10}`.
+
+`--placement-group` (optional)
+: Placement group configuration. Shorthand `type=NEW,placementGroupName=pg-1` or JSON. `type` is `NEW` or `EXISTING`; use `placementGroupName` (with `NEW`) or `placementGroupId` (with `EXISTING`).
+
+`--upgrade-config` (optional, default `maxSurge=1,maxUnavailable=0,strategy=SURGE`)
+: Upgrade configuration. Shorthand `maxSurge=1,maxUnavailable=0,strategy=SURGE` or JSON `{"maxSurge":1,"maxUnavailable":0,"strategy":"SURGE"}`.
+
 `--enable-encryption-volume` (optional)
 : Enable encryption for the node boot volumes.
 
@@ -103,6 +123,21 @@ grn vks create-nodegroup \
   --labels accelerator=nvidia,tier=gpu \
   --taints dedicated=gpu:NoSchedule \
   --enable-encryption-volume
+```
+
+Create an auto-scaling node group with a custom upgrade config (shorthand and JSON are both accepted):
+
+```bash
+grn vks create-nodegroup \
+  --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
+  --name auto-ng \
+  --os ubuntu \
+  --flavor-id flv-4c8g \
+  --disk-type SSD \
+  --ssh-key-id key-abc12345-0000-0000-0000-000000000001 \
+  --auto-scale minSize=2,maxSize=10 \
+  --upgrade-config '{"maxSurge":2,"maxUnavailable":1,"strategy":"SURGE"}' \
+  --tags team=platform,env=prod
 ```
 
 Validate parameters without creating:
