@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+### Features
+* **vks**: Add struct-valued flags (shorthand or JSON) to create-nodegroup: --tags, --secondary-subnets, --auto-scale, --placement-group, --upgrade-config
+
+### API Changes
+* **vks**: update-nodegroup: drop deprecated --labels/--taints (use update-nodegroup-metadata); replace --auto-scale-min/max and --upgrade-strategy/max-surge/max-unavailable with struct flags --auto-scale and --upgrade-config
+
 ## 1.2.0
 
 ### Bug Fixes
