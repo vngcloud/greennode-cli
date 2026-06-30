@@ -31,7 +31,12 @@ func runList(cmd *cobra.Command, args []string) {
 		profile = "default"
 	}
 
-	cfg, _ := config.LoadConfig(profile)
+	// A non-existent profile yields (nil, err); fall back to empty defaults so
+	// list shows unset values instead of panicking.
+	cfg, err := config.LoadConfig(profile)
+	if err != nil || cfg == nil {
+		cfg = &config.Config{}
+	}
 	configDir := config.DefaultConfigDir()
 	credsFile := filepath.Join(configDir, "credentials")
 	configFile := filepath.Join(configDir, "config")

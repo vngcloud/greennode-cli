@@ -1,0 +1,5 @@
+{
+  "type": "bugfix",
+  "category": "configure",
+  "description": "Fix panic (nil pointer) when running 'grn configure set/list --profile <name>' for a profile that does not exist yet; fall back to empty defaults so the value can be set"
+}
