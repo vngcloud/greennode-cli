@@ -19,10 +19,8 @@ func init() {
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("k8s-version", "", "Kubernetes version (required)")
 	f.String("whitelist-node-cidrs", "", "Whitelist CIDRs, comma-separated (required)")
-	f.Bool("enabled-load-balancer-plugin", false, "Enable load balancer plugin")
-	f.Bool("no-load-balancer-plugin", false, "Disable load balancer plugin")
-	f.Bool("enabled-block-store-csi-plugin", false, "Enable block store CSI plugin")
-	f.Bool("no-block-store-csi-plugin", false, "Disable block store CSI plugin")
+	f.String("load-balancer-plugin", "", "Load balancer plugin (enabled, disabled); unset = unchanged")
+	f.String("block-store-csi-plugin", "", "Block store CSI plugin (enabled, disabled); unset = unchanged")
 	f.Bool("dry-run", false, "Validate parameters without updating")
 
 	updateClusterCmd.MarkFlagRequired("cluster-id")
@@ -34,10 +32,6 @@ func runUpdateCluster(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	k8sVersion, _ := cmd.Flags().GetString("k8s-version")
 	whitelistCIDRs, _ := cmd.Flags().GetString("whitelist-node-cidrs")
-	enabledLB, _ := cmd.Flags().GetBool("enabled-load-balancer-plugin")
-	noLB, _ := cmd.Flags().GetBool("no-load-balancer-plugin")
-	enabledCSI, _ := cmd.Flags().GetBool("enabled-block-store-csi-plugin")
-	noCSI, _ := cmd.Flags().GetBool("no-block-store-csi-plugin")
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
@@ -49,16 +43,22 @@ func runUpdateCluster(cmd *cobra.Command, args []string) error {
 		"whitelistNodeCIDRs": parseCommaSeparated(whitelistCIDRs),
 	}
 
-	if enabledLB {
-		body["enabledLoadBalancerPlugin"] = true
-	} else if noLB {
-		body["enabledLoadBalancerPlugin"] = false
+	// Plugin toggles are only sent when explicitly provided (unset = unchanged).
+	if cmd.Flags().Changed("load-balancer-plugin") {
+		v, _ := cmd.Flags().GetString("load-balancer-plugin")
+		enabled, err := parseToggle("load-balancer-plugin", v)
+		if err != nil {
+			return err
+		}
+		body["enabledLoadBalancerPlugin"] = enabled
 	}
-
-	if enabledCSI {
-		body["enabledBlockStoreCsiPlugin"] = true
-	} else if noCSI {
-		body["enabledBlockStoreCsiPlugin"] = false
+	if cmd.Flags().Changed("block-store-csi-plugin") {
+		v, _ := cmd.Flags().GetString("block-store-csi-plugin")
+		enabled, err := parseToggle("block-store-csi-plugin", v)
+		if err != nil {
+			return err
+		}
+		body["enabledBlockStoreCsiPlugin"] = enabled
 	}
 
 	if dryRun {

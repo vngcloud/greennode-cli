@@ -6,7 +6,7 @@ Create a new VKS cluster with an initial default node group. The command provisi
 
 Cluster names must be 5–20 characters, lowercase alphanumeric and hyphens, starting and ending with an alphanumeric character. Node group names follow the same pattern with a length of 5–15 characters.
 
-When `--network-type` is `CALICO` or `CILIUM_OVERLAY`, the `--cidr` option is required. By default, both the load balancer plugin and the block store CSI plugin are enabled; use the `--no-*` flags to disable them.
+When `--network-type` is `TIGERA` or `CILIUM_OVERLAY`, the `--cidr` option is required. By default, both the load balancer plugin and the block store CSI plugin are enabled; use `--load-balancer-plugin disabled` or `--block-store-csi-plugin disabled` to turn them off.
 
 Use `--dry-run` to validate all parameters without sending a create request.
 
@@ -26,15 +26,13 @@ grn vks create-cluster
     --ssh-key-id <value>
     [--cidr <value>]
     [--description <value>]
-    [--enable-private-cluster]
+    [--private-cluster <enabled|disabled>]
     [--release-channel <value>]
-    [--enabled-load-balancer-plugin]
-    [--no-load-balancer-plugin]
-    [--enabled-block-store-csi-plugin]
-    [--no-block-store-csi-plugin]
+    [--load-balancer-plugin <enabled|disabled>]
+    [--block-store-csi-plugin <enabled|disabled>]
     [--disk-size <value>]
     [--num-nodes <value>]
-    [--enable-private-nodes]
+    [--private-nodes <enabled|disabled>]
     [--security-groups <value>]
     [--labels <value>]
     [--taints <value>]
@@ -52,7 +50,7 @@ grn vks create-cluster
 : Kubernetes version for the cluster (e.g. `v1.29.1`).
 
 `--network-type` (required)
-: Network type for the cluster. Accepted values: `CALICO`, `CILIUM_OVERLAY`, `CILIUM_NATIVE_ROUTING`.
+: Network type for the cluster. Accepted values: `TIGERA`, `CILIUM_OVERLAY`, `CILIUM_NATIVE_ROUTING`.
 
 `--vpc-id` (required)
 : VPC ID where the cluster will be provisioned.
@@ -61,28 +59,22 @@ grn vks create-cluster
 : Subnet ID for the cluster control plane and the default node group.
 
 `--cidr` (optional)
-: Pod CIDR block. Required when `--network-type` is `CALICO` or `CILIUM_OVERLAY` (e.g. `10.96.0.0/12`).
+: Pod CIDR block. Required when `--network-type` is `TIGERA` or `CILIUM_OVERLAY` (e.g. `10.96.0.0/12`).
 
 `--description` (optional)
 : Human-readable description for the cluster.
 
-`--enable-private-cluster` (optional)
-: Enable private cluster mode (control plane not accessible from the public internet).
+`--private-cluster` (optional, default `disabled`)
+: Control plane accessibility. `enabled` makes the control plane inaccessible from the public internet. Accepted values: `enabled`, `disabled`.
 
 `--release-channel` (optional)
 : Release channel for automatic upgrades. Accepted values: `RAPID`, `STABLE`. Default: `STABLE`.
 
-`--enabled-load-balancer-plugin` (optional)
-: Explicitly enable the load balancer plugin (enabled by default).
+`--load-balancer-plugin` (optional, default `enabled`)
+: Load balancer plugin state. Accepted values: `enabled`, `disabled`.
 
-`--no-load-balancer-plugin` (optional)
-: Disable the load balancer plugin.
-
-`--enabled-block-store-csi-plugin` (optional)
-: Explicitly enable the block store CSI plugin (enabled by default).
-
-`--no-block-store-csi-plugin` (optional)
-: Disable the block store CSI plugin.
+`--block-store-csi-plugin` (optional, default `enabled`)
+: Block store CSI plugin state. Accepted values: `enabled`, `disabled`.
 
 **Node group settings**
 
@@ -93,7 +85,7 @@ grn vks create-cluster
 : Flavor (instance type) ID for the nodes.
 
 `--os` (optional, default `ubuntu`)
-: Node group OS image. Supported values: `ubuntu`, `linux`.
+: Node group OS image. Supported values: `ubuntu`, `linux`, `rocky`.
 
 `--disk-type` (required)
 : Disk type ID for the node boot volumes.
@@ -107,8 +99,8 @@ grn vks create-cluster
 `--num-nodes` (optional)
 : Number of nodes to create in the default node group. Accepted range: 0–10. Default: `1`.
 
-`--enable-private-nodes` (optional)
-: Enable private nodes (nodes will not have public IP addresses).
+`--private-nodes` (optional, default `disabled`)
+: Private nodes state. `enabled` means nodes will not have public IP addresses. Accepted values: `enabled`, `disabled`.
 
 `--security-groups` (optional)
 : Comma-separated list of security group IDs to attach to the nodes (e.g. `sg-aaa111,sg-bbb222`).
@@ -140,13 +132,13 @@ grn vks create-cluster \
   --ssh-key-id key-abc12345-0000-0000-0000-000000000001
 ```
 
-Create a cluster with CALICO network type (CIDR required):
+Create a cluster with TIGERA network type (CIDR required):
 
 ```bash
 grn vks create-cluster \
   --name prod-cluster \
   --k8s-version v1.29.1 \
-  --network-type CALICO \
+  --network-type TIGERA \
   --cidr 10.96.0.0/12 \
   --vpc-id net-abc12345-0000-0000-0000-000000000001 \
   --subnet-id sub-abc12345-0000-0000-0000-000000000001 \

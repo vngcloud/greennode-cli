@@ -165,7 +165,6 @@ grn --version
 **Events**
 
 - `get-cluster-events` — Get the list of events for a cluster
-- `get-nodegroup-events` — Get the list of events for a node group
 
 **Kubeconfig**
 

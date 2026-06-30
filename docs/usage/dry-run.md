@@ -25,7 +25,7 @@ Validates parameters offline:
 - Cluster/nodegroup name format
 - Disk size range (20-5000 GiB)
 - Number of nodes range (0-10)
-- CIDR requirement for CALICO/CILIUM_OVERLAY networks
+- CIDR requirement for TIGERA/CILIUM_OVERLAY networks
 
 ### Delete dry-run
 

@@ -1,12 +1,26 @@
 package vks
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/client"
 )
+
+// parseToggle converts an "enabled"/"disabled" flag value to a bool, erroring on
+// any other value. Used by --private-cluster/--private-nodes/--*-plugin flags.
+func parseToggle(name, value string) (bool, error) {
+	switch value {
+	case "enabled":
+		return true, nil
+	case "disabled":
+		return false, nil
+	default:
+		return false, fmt.Errorf("--%s must be 'enabled' or 'disabled', got %q", name, value)
+	}
+}
 
 // createClient builds a GreenodeClient for the VKS service from command flags.
 func createClient(cmd *cobra.Command) (*client.GreenodeClient, error) {
