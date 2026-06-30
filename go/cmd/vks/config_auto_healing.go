@@ -19,7 +19,7 @@ func init() {
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.Bool("enable-auto-healing", false, "Enable auto-healing (required)")
 	f.String("max-unhealthy", "", "Max unhealthy nodes, e.g. \"30%\"")
-	f.String("unhealthy-range", "", "Unhealthy range")
+	f.String("unhealthy-range", "", "Unhealthy node count range as \"[min-max]\", e.g. \"[2-5]\"")
 	f.Int("timeout-unhealthy", 0, "Unhealthy timeout in seconds")
 
 	configAutoHealingCmd.MarkFlagRequired("cluster-id")
