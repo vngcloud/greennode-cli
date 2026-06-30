@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+### Bug Fixes
+* **configure**: Fix panic (nil pointer) when running 'grn configure --profile <name>' for a profile that does not exist yet; start from empty defaults so the profile can be created
+* **vks**: Return a non-zero exit code and 'unknown command' error for invalid subcommands of grn vks/vserver (and their groups) instead of silently printing help with exit 0
+
+### API Changes
+* **vks**: Remove get-nodegroup-events; network-type CALICO->TIGERA; --os adds rocky; replace boolean toggle flags with --private-cluster/--private-nodes/--load-balancer-plugin/--block-store-csi-plugin <enabled|disabled>
+
 ## 1.1.0
 
 ### Features

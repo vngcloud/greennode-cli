@@ -1,5 +1,0 @@
-{
-  "type": "api-change",
-  "category": "vks",
-  "description": "Remove get-nodegroup-events; network-type CALICO->TIGERA; --os adds rocky; replace boolean toggle flags with --private-cluster/--private-nodes/--load-balancer-plugin/--block-store-csi-plugin <enabled|disabled>"
-}

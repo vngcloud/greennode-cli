@@ -1,5 +1,0 @@
-{
-  "type": "bugfix",
-  "category": "configure",
-  "description": "Fix panic (nil pointer) when running 'grn configure --profile <name>' for a profile that does not exist yet; start from empty defaults so the profile can be created"
-}
