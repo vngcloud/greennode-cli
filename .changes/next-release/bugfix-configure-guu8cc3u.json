@@ -1,5 +1,0 @@
-{
-  "type": "bugfix",
-  "category": "configure",
-  "description": "Mask credential values in 'configure set' output so client_id/client_secret are no longer echoed in plaintext to stdout (consistent with 'configure list'); non-sensitive values are still shown"
-}

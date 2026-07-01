@@ -11,7 +11,7 @@ import (
 	"github.com/vngcloud/greennode-cli/internal/config"
 )
 
-const cliVersion = "1.3.1"
+const cliVersion = "1.4.0"
 
 // Global flags
 var (

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4.0
+
+### Features
+* **output**: Implement the --color flag (on/off/auto, like aws): color status values (ACTIVE=green, ERROR/FAILED=red, CREATING/PENDING=yellow) in text and table output. auto colors only when stdout is a terminal and NO_COLOR is unset; JSON output is never colored
+
+### Enhancements
+* **core**: Add --dry-run to destructive commands that lacked it (vServer server stop/reboot/delete, volume/vpc/subnet/secgroup/secgroup-rule delete, and vks delete-auto-upgrade-config) and unify the preview + confirmation flow across delete commands via shared helpers
+
+### Bug Fixes
+* **configure**: Mask credential values in 'configure set' output so client_id/client_secret are no longer echoed in plaintext to stdout (consistent with 'configure list'); non-sensitive values are still shown
+* **vks**: grn vks wait now aborts immediately on a permanent error (HTTP 403/401/400, or 404 for an active waiter) instead of polling until timeout; transient errors (5xx, network) still retry
+
+### API Changes
+* **vks**: Rename 'set-auto-upgrade-config' to 'config-auto-upgrade'; the old name still works as a deprecated alias
+
 ## 1.3.1
 
 ### Enhancements

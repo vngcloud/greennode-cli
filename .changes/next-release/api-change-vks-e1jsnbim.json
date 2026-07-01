@@ -1,5 +1,0 @@
-{
-  "type": "api-change",
-  "category": "vks",
-  "description": "Rename 'set-auto-upgrade-config' to 'config-auto-upgrade'; the old name still works as a deprecated alias"
-}

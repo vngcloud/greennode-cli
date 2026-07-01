@@ -1,5 +1,0 @@
-{
-  "type": "bugfix",
-  "category": "vks",
-  "description": "grn vks wait now aborts immediately on a permanent error (HTTP 403/401/400, or 404 for an active waiter) instead of polling until timeout; transient errors (5xx, network) still retry"
-}
