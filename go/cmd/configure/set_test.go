@@ -9,6 +9,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// displaySetValue must mask credentials so `set` never echoes a secret, while
+// leaving non-sensitive values readable.
+func TestDisplaySetValueMasksSecrets(t *testing.T) {
+	secret := "super-secret-value-z789"
+	for _, key := range []string{"client_id", "client_secret"} {
+		got := displaySetValue(key, secret)
+		if strings.Contains(got, "super-secret") {
+			t.Errorf("%s: value not masked, got %q", key, got)
+		}
+		if !strings.HasSuffix(got, "z789") {
+			t.Errorf("%s: expected masked value keeping last 4 chars, got %q", key, got)
+		}
+	}
+	if got := displaySetValue("region", "HCM-3"); got != "HCM-3" {
+		t.Errorf("region should not be masked, got %q", got)
+	}
+}
+
 // newConfigureTestCmd wires a root command with the persistent `profile` flag
 // (registered on rootCmd in production) so the configure subcommands resolve it
 // exactly as they do at runtime.
