@@ -1,12 +1,10 @@
 package secgroup
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -20,12 +18,14 @@ func init() {
 	f := deleteCmd.Flags()
 	f.String("secgroup-id", "", "Security group ID (required)")
 	f.Bool("force", false, "Skip confirmation prompt")
+	f.Bool("dry-run", false, "Preview the security group deletion without executing")
 	deleteCmd.MarkFlagRequired("secgroup-id")
 }
 
 func runDelete(cmd *cobra.Command, args []string) error {
 	secgroupID, _ := cmd.Flags().GetString("secgroup-id")
 	force, _ := cmd.Flags().GetBool("force")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(secgroupID, "secgroup-id"); err != nil {
 		return err
@@ -50,15 +50,13 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if !force {
-		fmt.Print("\nAre you sure you want to delete this security group? [y/N]: ")
-		reader := bufio.NewReader(os.Stdin)
-		answer, _ := reader.ReadString('\n')
-		answer = strings.TrimSpace(strings.ToLower(answer))
-		if answer != "y" && answer != "yes" {
-			fmt.Println("Aborted.")
-			return nil
-		}
+	if dryRun {
+		cli.DryRunNotice("delete")
+		return nil
+	}
+	if !cli.Confirm(force, "Are you sure you want to delete this security group?") {
+		fmt.Println("Aborted.")
+		return nil
 	}
 
 	result, err := apiClient.Delete(fmt.Sprintf("/v2/%s/secgroups/%s", projectID, secgroupID), nil)

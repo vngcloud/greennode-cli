@@ -1,13 +1,15 @@
-# set-auto-upgrade-config
+# config-auto-upgrade
 
 ## Description
 
 Configure auto-upgrade schedule for a cluster. Sets the days and time when automatic Kubernetes version upgrades will be performed.
 
+> Formerly `set-auto-upgrade-config`. That name still works as a deprecated alias.
+
 ## Synopsis
 
 ```
-grn vks set-auto-upgrade-config
+grn vks config-auto-upgrade
     --cluster-id <value>
     --weekdays <value>
     --time <value>
@@ -29,7 +31,7 @@ grn vks set-auto-upgrade-config
 Set auto-upgrade to run on weekdays at 3 AM:
 
 ```bash
-grn vks set-auto-upgrade-config \
+grn vks config-auto-upgrade \
   --cluster-id k8s-xxxxx \
   --weekdays Mon,Tue,Wed,Thu,Fri \
   --time 03:00
@@ -38,7 +40,7 @@ grn vks set-auto-upgrade-config \
 Set auto-upgrade to run on weekends at midnight:
 
 ```bash
-grn vks set-auto-upgrade-config \
+grn vks config-auto-upgrade \
   --cluster-id k8s-xxxxx \
   --weekdays Sat,Sun \
   --time 00:00

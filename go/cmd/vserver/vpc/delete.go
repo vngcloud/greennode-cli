@@ -1,12 +1,10 @@
 package vpc
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -20,12 +18,14 @@ func init() {
 	f := deleteCmd.Flags()
 	f.String("vpc-id", "", "VPC (network) ID (required)")
 	f.Bool("force", false, "Skip confirmation prompt")
+	f.Bool("dry-run", false, "Preview the VPC deletion without executing")
 	deleteCmd.MarkFlagRequired("vpc-id")
 }
 
 func runDelete(cmd *cobra.Command, args []string) error {
 	vpcID, _ := cmd.Flags().GetString("vpc-id")
 	force, _ := cmd.Flags().GetBool("force")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(vpcID, "vpc-id"); err != nil {
 		return err
@@ -55,15 +55,13 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if !force {
-		fmt.Print("\nAre you sure you want to delete this VPC? [y/N]: ")
-		reader := bufio.NewReader(os.Stdin)
-		answer, _ := reader.ReadString('\n')
-		answer = strings.TrimSpace(strings.ToLower(answer))
-		if answer != "y" && answer != "yes" {
-			fmt.Println("Aborted.")
-			return nil
-		}
+	if dryRun {
+		cli.DryRunNotice("delete")
+		return nil
+	}
+	if !cli.Confirm(force, "Are you sure you want to delete this VPC?") {
+		fmt.Println("Aborted.")
+		return nil
 	}
 
 	result, err := apiClient.Delete(fmt.Sprintf("/v2/%s/networks/%s", projectID, vpcID), nil)

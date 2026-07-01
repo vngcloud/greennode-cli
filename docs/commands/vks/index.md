@@ -41,7 +41,7 @@ grn vks <command> [options]
 
 | Command | Description |
 |---------|-------------|
-| [set-auto-upgrade-config](set-auto-upgrade-config.md) | Configure auto-upgrade schedule for a cluster |
+| [config-auto-upgrade](config-auto-upgrade.md) | Configure auto-upgrade schedule for a cluster (alias: set-auto-upgrade-config) |
 | [delete-auto-upgrade-config](delete-auto-upgrade-config.md) | Delete auto-upgrade config for a cluster |
 
 ### Auto-Healing
