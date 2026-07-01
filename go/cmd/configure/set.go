@@ -67,5 +67,17 @@ func runSet(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Set '%s' to '%s' for profile '%s'.\n", key, value, profile)
+	fmt.Printf("Set '%s' to '%s' for profile '%s'.\n", key, displaySetValue(key, value), profile)
+}
+
+// displaySetValue masks credential values so `configure set` never echoes a
+// secret in plaintext (matching how `configure list` masks them). Non-sensitive
+// values are shown as-is.
+func displaySetValue(key, value string) string {
+	switch key {
+	case "client_id", "client_secret":
+		return config.MaskCredential(value)
+	default:
+		return value
+	}
 }

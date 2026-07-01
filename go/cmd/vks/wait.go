@@ -21,36 +21,64 @@ func statusOf(result interface{}) string {
 	return s
 }
 
-// evaluateActive decides one poll for an "*-active" waiter.
-func evaluateActive(result interface{}, err error) (done bool, failed bool, status string) {
+// isPermanentAPIError reports whether err is an HTTP client error that will not
+// resolve by polling again (bad request, unauthenticated, forbidden). 404 is
+// intentionally excluded here — each waiter interprets it for itself.
+func isPermanentAPIError(err error) bool {
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) {
+		switch apiErr.StatusCode {
+		case 400, 401, 403:
+			return true
+		}
+	}
+	return false
+}
+
+// evaluateActive decides one poll for an "*-active" waiter. A fatal error aborts
+// the wait immediately (permanent client errors / resource not found); other
+// errors are treated as transient and polling continues.
+func evaluateActive(result interface{}, err error) (done bool, failed bool, status string, fatal error) {
 	if err != nil {
-		return false, false, ""
+		var apiErr *client.APIError
+		if errors.As(err, &apiErr) && apiErr.StatusCode == 404 {
+			return false, false, "", err
+		}
+		if isPermanentAPIError(err) {
+			return false, false, "", err
+		}
+		return false, false, "", nil
 	}
 	status = statusOf(result)
 	switch status {
 	case "ACTIVE":
-		return true, false, status
+		return true, false, status, nil
 	case "ERROR", "FAILED":
-		return false, true, status
+		return false, true, status, nil
 	default:
-		return false, false, status
+		return false, false, status, nil
 	}
 }
 
-// evaluateDeleted decides one poll for a "*-deleted" waiter.
-func evaluateDeleted(result interface{}, err error) (done bool, failed bool, status string) {
+// evaluateDeleted decides one poll for a "*-deleted" waiter. A 404 means the
+// resource is gone (success); permanent client errors abort; other errors are
+// transient.
+func evaluateDeleted(result interface{}, err error) (done bool, failed bool, status string, fatal error) {
 	if err != nil {
 		var apiErr *client.APIError
 		if errors.As(err, &apiErr) && apiErr.StatusCode == 404 {
-			return true, false, "DELETED"
+			return true, false, "DELETED", nil
 		}
-		return false, false, ""
+		if isPermanentAPIError(err) {
+			return false, false, "", err
+		}
+		return false, false, "", nil
 	}
 	status = statusOf(result)
 	if status == "ACTIVE" {
-		return false, true, status
+		return false, true, status, nil
 	}
-	return false, false, status
+	return false, false, status, nil
 }
 
 // waitCmd is the parent for all `grn vks wait <condition>` subcommands.
@@ -60,8 +88,9 @@ var waitCmd = &cobra.Command{
 	Long:  "Poll until a cluster or node group reaches the requested state (active or deleted).",
 }
 
-// evaluator decides, for one poll, whether the waiter is done or has failed.
-type evaluator func(result interface{}, err error) (done bool, failed bool, status string)
+// evaluator decides, for one poll, whether the waiter is done, has failed, or
+// hit a fatal error that should abort polling immediately.
+type evaluator func(result interface{}, err error) (done bool, failed bool, status string, fatal error)
 
 // runWaiter polls describe() every delay seconds up to maxAttempts times,
 // driving the waiter via eval. Progress goes to stderr; on success it prints
@@ -70,7 +99,15 @@ type evaluator func(result interface{}, err error) (done bool, failed bool, stat
 func runWaiter(label, successMsg string, describe func() (interface{}, error), eval evaluator, delay, maxAttempts int) error {
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		result, err := describe()
-		done, failed, status := eval(result, err)
+		done, failed, status, fatal := eval(result, err)
+
+		// A fatal error (e.g. 403 Forbidden) will never resolve by polling —
+		// abort immediately instead of retrying until timeout.
+		if fatal != nil {
+			fmt.Fprintln(os.Stderr)
+			fmt.Fprintf(os.Stderr, "Error waiting for %s: %v\n", label, fatal)
+			os.Exit(255)
+		}
 
 		shown := status
 		if shown == "" {

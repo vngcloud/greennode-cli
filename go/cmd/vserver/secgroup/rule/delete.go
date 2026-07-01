@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -14,8 +15,11 @@ var deleteCmd = &cobra.Command{
 }
 
 func init() {
-	deleteCmd.Flags().String("secgroup-id", "", "Security group ID (required)")
-	deleteCmd.Flags().String("rule-id", "", "Security group rule ID (required)")
+	f := deleteCmd.Flags()
+	f.String("secgroup-id", "", "Security group ID (required)")
+	f.String("rule-id", "", "Security group rule ID (required)")
+	f.Bool("dry-run", false, "Preview the rule deletion without executing")
+	f.Bool("force", false, "Skip confirmation prompt")
 	deleteCmd.MarkFlagRequired("secgroup-id")
 	deleteCmd.MarkFlagRequired("rule-id")
 }
@@ -23,6 +27,8 @@ func init() {
 func runDelete(cmd *cobra.Command, args []string) error {
 	secgroupID, _ := cmd.Flags().GetString("secgroup-id")
 	ruleID, _ := cmd.Flags().GetString("rule-id")
+	force, _ := cmd.Flags().GetBool("force")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(secgroupID, "secgroup-id"); err != nil {
 		return err
@@ -39,6 +45,22 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	projectID, err := getProjectID(cfg)
 	if err != nil {
 		return err
+	}
+
+	fmt.Println("The following security group rule will be deleted:")
+	fmt.Println()
+	fmt.Printf("  Rule ID:     %s\n", ruleID)
+	fmt.Printf("  Secgroup ID: %s\n", secgroupID)
+	fmt.Println()
+	fmt.Println("This action is irreversible.")
+
+	if dryRun {
+		cli.DryRunNotice("delete")
+		return nil
+	}
+	if !cli.Confirm(force, "Are you sure you want to delete this rule?") {
+		fmt.Println("Aborted.")
+		return nil
 	}
 
 	result, err := apiClient.Delete(

@@ -1,12 +1,11 @@
 package vks
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -66,18 +65,13 @@ func runDeleteNodegroup(cmd *cobra.Command, args []string) error {
 	fmt.Println("This action is irreversible.")
 
 	if dryRun {
-		fmt.Println("Run without --dry-run to delete.")
+		cli.DryRunNotice("delete")
 		return nil
 	}
 
-	if !force {
-		fmt.Print("\nAre you sure you want to delete this node group? (yes/no): ")
-		reader := bufio.NewReader(os.Stdin)
-		response, _ := reader.ReadString('\n')
-		if strings.TrimSpace(strings.ToLower(response)) != "yes" {
-			fmt.Println("Delete cancelled.")
-			return nil
-		}
+	if !cli.Confirm(force, "Are you sure you want to delete this node group?") {
+		fmt.Println("Aborted.")
+		return nil
 	}
 
 	params := map[string]string{}
