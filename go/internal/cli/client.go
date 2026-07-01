@@ -40,6 +40,7 @@ func NewClient(cmd *cobra.Command, serviceName string) (*client.GreenodeClient, 
 
 	var baseURL string
 	if endpointURL != "" {
+		WarnIfUntrustedEndpoint(endpointURL)
 		baseURL = endpointURL
 	} else {
 		baseURL, err = cfg.GetEndpoint(serviceName)

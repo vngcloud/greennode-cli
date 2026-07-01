@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vngcloud/greennode-cli/internal/auth"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/client"
 	"github.com/vngcloud/greennode-cli/internal/config"
 	"github.com/vngcloud/greennode-cli/internal/formatter"
@@ -37,6 +38,7 @@ func BuildClient(cmd *cobra.Command) (*client.GreenodeClient, *config.Config, er
 
 	var baseURL string
 	if endpointURL != "" {
+		cli.WarnIfUntrustedEndpoint(endpointURL)
 		baseURL = endpointURL
 	} else {
 		baseURL, err = cfg.GetEndpoint("vserver")

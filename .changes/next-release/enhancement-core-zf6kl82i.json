@@ -1,0 +1,5 @@
+{
+  "type": "enhancement",
+  "category": "core",
+  "description": "Warn when --endpoint-url points outside the trusted vngcloud.vn domain, since grn sends a replayable IAM bearer token with every request (SEC-08). The warning does not block the request"
+}
