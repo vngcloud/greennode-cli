@@ -1,0 +1,5 @@
+{
+  "type": "feature",
+  "category": "output",
+  "description": "Implement the --color flag (on/off/auto, like aws): color status values (ACTIVE=green, ERROR/FAILED=red, CREATING/PENDING=yellow) in text and table output. auto colors only when stdout is a terminal and NO_COLOR is unset; JSON output is never colored"
+}

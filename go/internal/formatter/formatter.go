@@ -17,8 +17,15 @@ import (
 // mistaken for the rows — which previously produced empty table/text output.
 var knownListKeys = []string{"items", "listData", "data"}
 
-// Format formats and outputs the response data.
+// Format formats and outputs the response data (no coloring).
 func Format(data interface{}, outputFormat, query string, w io.Writer) error {
+	return FormatColor(data, outputFormat, query, w, false)
+}
+
+// FormatColor formats and outputs the response data, coloring status values in
+// text/table output when color is true. JSON output is never colored so it
+// stays valid.
+func FormatColor(data interface{}, outputFormat, query string, w io.Writer, color bool) error {
 	if w == nil {
 		w = os.Stdout
 	}
@@ -40,9 +47,9 @@ func Format(data interface{}, outputFormat, query string, w io.Writer) error {
 	case "json":
 		formatJSON(data, w)
 	case "text":
-		formatText(data, w)
+		formatText(data, w, color)
 	case "table":
-		formatTable(data, w)
+		formatTable(data, w, color)
 	default:
 		formatJSON(data, w)
 	}
@@ -61,7 +68,7 @@ func formatJSON(data interface{}, w io.Writer) {
 	fmt.Fprintf(w, "%s\n", string(out))
 }
 
-func formatText(data interface{}, w io.Writer) {
+func formatText(data interface{}, w io.Writer, color bool) {
 	if data == nil || isEmptyMap(data) {
 		return
 	}
@@ -69,7 +76,7 @@ func formatText(data interface{}, w io.Writer) {
 	if rows, ok := listRows(data); ok {
 		for _, item := range rows {
 			if m, ok := item.(map[string]interface{}); ok {
-				fmt.Fprintln(w, strings.Join(mapValues(m), "\t"))
+				fmt.Fprintln(w, strings.Join(colorValues(mapValues(m), color), "\t"))
 			} else {
 				fmt.Fprintln(w, fmt.Sprint(item))
 			}
@@ -78,13 +85,26 @@ func formatText(data interface{}, w io.Writer) {
 	}
 
 	if m, ok := data.(map[string]interface{}); ok {
-		fmt.Fprintln(w, strings.Join(mapValues(m), "\t"))
+		fmt.Fprintln(w, strings.Join(colorValues(mapValues(m), color), "\t"))
 		return
 	}
 	fmt.Fprintln(w, fmt.Sprint(data))
 }
 
-func formatTable(data interface{}, w io.Writer) {
+// colorValues colors each value that is a recognized status. Values are not
+// padded here, so the raw value doubles as both the padded and raw argument.
+func colorValues(vals []string, color bool) []string {
+	if !color {
+		return vals
+	}
+	out := make([]string, len(vals))
+	for i, v := range vals {
+		out[i] = colorCell(v, v, color)
+	}
+	return out
+}
+
+func formatTable(data interface{}, w io.Writer, color bool) {
 	if data == nil || isEmptyMap(data) {
 		return
 	}
@@ -92,14 +112,14 @@ func formatTable(data interface{}, w io.Writer) {
 	// List response (top-level array, or object wrapping items/listData/data):
 	// render as a multi-column table.
 	if rows, ok := listRows(data); ok {
-		formatRowsTable(rows, w)
+		formatRowsTable(rows, w, color)
 		return
 	}
 
 	// Detail response (a single object): render as a two-column key/value table
 	// so its scalar fields are visible instead of being hijacked by a nested array.
 	if m, ok := data.(map[string]interface{}); ok {
-		formatKeyValueTable(m, w)
+		formatKeyValueTable(m, w, color)
 		return
 	}
 
@@ -109,7 +129,7 @@ func formatTable(data interface{}, w io.Writer) {
 // formatRowsTable renders a slice of object rows as a multi-column table with a
 // header row. Columns are the sorted keys of the first row. Non-map rows are
 // printed one per line.
-func formatRowsTable(rows []interface{}, w io.Writer) {
+func formatRowsTable(rows []interface{}, w io.Writer, color bool) {
 	if len(rows) == 0 {
 		return
 	}
@@ -143,13 +163,13 @@ func formatRowsTable(rows []interface{}, w io.Writer) {
 	printRow(w, headers, colWidths)
 	printSeparator(w, colWidths)
 	for _, row := range strRows {
-		printRow(w, row, colWidths)
+		printColoredRow(w, row, colWidths, color)
 	}
 }
 
 // formatKeyValueTable renders a single object as a two-column FIELD | VALUE
 // table, with fields sorted for deterministic output.
-func formatKeyValueTable(m map[string]interface{}, w io.Writer) {
+func formatKeyValueTable(m map[string]interface{}, w io.Writer, color bool) {
 	if len(m) == 0 {
 		return
 	}
@@ -173,7 +193,7 @@ func formatKeyValueTable(m map[string]interface{}, w io.Writer) {
 	printRow(w, []string{"FIELD", "VALUE"}, widths)
 	printSeparator(w, widths)
 	for i, k := range keys {
-		printRow(w, []string{k, vals[i]}, widths)
+		printColoredRow(w, []string{k, vals[i]}, widths, color)
 	}
 }
 
@@ -181,6 +201,16 @@ func printRow(w io.Writer, cells []string, widths []int) {
 	parts := make([]string, len(cells))
 	for i, c := range cells {
 		parts[i] = padRight(c, widths[i])
+	}
+	fmt.Fprintln(w, strings.Join(parts, " | "))
+}
+
+// printColoredRow is printRow that colors any cell whose value is a recognized
+// status. Cells are padded on their raw text first, so alignment is unaffected.
+func printColoredRow(w io.Writer, cells []string, widths []int, color bool) {
+	parts := make([]string, len(cells))
+	for i, c := range cells {
+		parts[i] = colorCell(padRight(c, widths[i]), c, color)
 	}
 	fmt.Fprintln(w, strings.Join(parts, " | "))
 }
@@ -241,6 +271,12 @@ func padRight(s string, n int) string {
 	return s + strings.Repeat(" ", n-len(s))
 }
 func FormatTableWithColumns(data interface{}, columns []string, query string, w io.Writer) error {
+	return FormatTableWithColumnsColor(data, columns, query, w, false)
+}
+
+// FormatTableWithColumnsColor is FormatTableWithColumns that colors status
+// values when color is true.
+func FormatTableWithColumnsColor(data interface{}, columns []string, query string, w io.Writer, color bool) error {
 	if w == nil {
 		w = os.Stdout
 	}
@@ -254,11 +290,11 @@ func FormatTableWithColumns(data interface{}, columns []string, query string, w 
 	if data == nil {
 		return nil
 	}
-	formatTableColumns(data, columns, w)
+	formatTableColumns(data, columns, w, color)
 	return nil
 }
 
-func formatTableColumns(data interface{}, columns []string, w io.Writer) {
+func formatTableColumns(data interface{}, columns []string, w io.Writer, color bool) {
 	if data == nil || isEmptyMap(data) {
 		return
 	}
@@ -306,11 +342,7 @@ func formatTableColumns(data interface{}, columns []string, w io.Writer) {
 	fmt.Fprintln(w, strings.Join(sepParts, "-+-"))
 
 	for _, row := range strRows {
-		parts := make([]string, len(row))
-		for i, val := range row {
-			parts[i] = padRight(val, colWidths[i])
-		}
-		fmt.Fprintln(w, strings.Join(parts, " | "))
+		printColoredRow(w, row, colWidths, color)
 	}
 }
 

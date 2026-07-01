@@ -76,7 +76,8 @@ func Output(cmd *cobra.Command, cfg *config.Config, data interface{}) error {
 		output = "json"
 	}
 
-	return formatter.Format(data, output, query, os.Stdout)
+	colorMode, _ := cmd.Flags().GetString("color")
+	return formatter.FormatColor(data, output, query, os.Stdout, formatter.ColorEnabled(colorMode, os.Stdout))
 }
 
 // OutputWithColumns formats and writes the API result to stdout.
@@ -92,8 +93,10 @@ func OutputWithColumns(cmd *cobra.Command, cfg *config.Config, data interface{},
 		output = "json"
 	}
 
+	colorMode, _ := cmd.Flags().GetString("color")
+	color := formatter.ColorEnabled(colorMode, os.Stdout)
 	if output == "table" && len(columns) > 0 {
-		return formatter.FormatTableWithColumns(data, columns, query, os.Stdout)
+		return formatter.FormatTableWithColumnsColor(data, columns, query, os.Stdout, color)
 	}
-	return formatter.Format(data, output, query, os.Stdout)
+	return formatter.FormatColor(data, output, query, os.Stdout, color)
 }
