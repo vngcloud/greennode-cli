@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1
+
+### Enhancements
+* **vks**: Add --dry-run to the remaining mutating VKS commands (config-auto-healing, config-auto-upgrade, update-nodegroup-metadata, upgrade-nodegroup-version, generate-kubeconfig); it previews the request payload and exits without calling the API (works offline)
+
 ## 1.4.0
 
 ### Features
