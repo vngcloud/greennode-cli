@@ -29,6 +29,7 @@ func init() {
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("weekdays", "", "Days of the week, e.g. Mon,Wed,Fri (required)")
 	f.String("time", "", "Time of day in 24h format HH:mm, e.g. 03:00 (required)")
+	f.Bool("dry-run", false, "Preview the auto-upgrade config without executing")
 	setAutoUpgradeConfigCmd.MarkFlagRequired("cluster-id")
 	setAutoUpgradeConfigCmd.MarkFlagRequired("weekdays")
 	setAutoUpgradeConfigCmd.MarkFlagRequired("time")
@@ -45,19 +46,25 @@ func runSetAutoUpgradeConfig(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	weekdays, _ := cmd.Flags().GetString("weekdays")
 	timeVal, _ := cmd.Flags().GetString("time")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
-		return err
-	}
-
-	apiClient, err := createClient(cmd)
-	if err != nil {
 		return err
 	}
 
 	body := map[string]interface{}{
 		"weekdays": weekdays,
 		"time":     timeVal,
+	}
+
+	if dryRun {
+		cli.PrintDryRun("configure", fmt.Sprintf("auto-upgrade for cluster %s", clusterID), body)
+		return nil
+	}
+
+	apiClient, err := createClient(cmd)
+	if err != nil {
+		return err
 	}
 
 	result, err := apiClient.Put(

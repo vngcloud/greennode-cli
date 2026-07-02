@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -12,6 +13,26 @@ import (
 // prints "Run without --dry-run to delete."
 func DryRunNotice(verb string) {
 	fmt.Printf("\nRun without --dry-run to %s.\n", verb)
+}
+
+// PrintDryRun prints a consistent --dry-run preview for a mutating request: a
+// header, the target being changed, the request body (keys sorted for stable
+// output), and the standard footer. verb is the action (e.g. "update",
+// "upgrade", "configure").
+func PrintDryRun(verb, target string, body map[string]interface{}) {
+	fmt.Println("=== DRY RUN ===")
+	if target != "" {
+		fmt.Printf("Would %s %s:\n", verb, target)
+	}
+	keys := make([]string, 0, len(body))
+	for k := range body {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		fmt.Printf("  %s: %v\n", k, body[k])
+	}
+	DryRunNotice(verb)
 }
 
 // Confirm asks the user to confirm a destructive action and reports whether to
