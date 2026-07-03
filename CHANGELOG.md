@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0
+
+### Features
+* **vks**: create-cluster gains the remaining optional CreateClusterDto fields: --secondary-subnets, --list-subnet-ids, --node-netmask-size, --service-endpoint, --az-strategy, and struct-valued --auto-upgrade-config/--auto-healing-config (shorthand or JSON, matching create-nodegroup). --subnet-id is now optional (per spec; pass --subnet-id or --list-subnet-ids or neither, the server validates)
+
+### Enhancements
+* **core**: cli.ParseStructFlag gains bool-field coercion (ParseStructFlagTyped) so struct flags can carry boolean values in shorthand
+
 ## 1.5.0
 
 ### Enhancements
