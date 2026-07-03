@@ -2,9 +2,9 @@
 
 ## Description
 
-Delete a specific node group from a VKS cluster. Before executing, the command always fetches and displays a preview of the node group that will be removed (name, status, node count).
+Delete a specific node group from a VKS cluster. Before executing, the command fetches and displays a preview of the node group that will be removed (name, status, node count).
 
-Unless `--force` is provided, you will be prompted to type `yes` to confirm. Use `--dry-run` to see the preview without being prompted and without deleting anything. Use `--force-delete` to instruct the API to perform a forced deletion.
+Unless `--force` is provided, you are prompted to confirm. Use `--dry-run` to see the preview without being prompted and without deleting anything. Use `--force-delete` to instruct the API to perform a forced deletion.
 
 **This action is irreversible.**
 
@@ -21,20 +21,42 @@ grn vks delete-nodegroup
 
 ## Options
 
-`--cluster-id` (required)
-: ID of the cluster that owns the node group.
+**`--cluster-id`** (string)
 
-`--nodegroup-id` (required)
-: ID of the node group to delete.
+ID of the cluster that owns the node group.
 
-`--force-delete` (optional)
-: Instruct the API to perform a forced deletion of the node group.
+- Required: Yes
 
-`--dry-run` (optional)
-: Display the node group that would be deleted without executing the delete request.
+**`--nodegroup-id`** (string)
 
-`--force` (optional)
-: Skip the interactive confirmation prompt and delete immediately.
+ID of the node group to delete.
+
+- Required: Yes
+
+**`--force-delete`** (boolean)
+
+Instruct the API to perform a forced deletion of the node group. Passes `forceDelete=true` as a query parameter to the delete endpoint.
+
+- Required: No
+- Default: `false`
+
+**`--dry-run`** (boolean)
+
+Display the node group that would be deleted without sending the delete request.
+
+- Required: No
+- Default: `false`
+
+**`--force`** (boolean)
+
+Skip the interactive confirmation prompt and delete immediately. Useful in non-interactive scripts.
+
+- Required: No
+- Default: `false`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 

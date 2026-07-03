@@ -2,9 +2,11 @@
 
 ## Description
 
-Update a VKS cluster's Kubernetes version, whitelist CIDRs, and plugin configuration. The Kubernetes version and at least one whitelist CIDR are always required by the API, even when only updating plugin settings.
+Update a VKS cluster's Kubernetes version, node CIDR whitelist, and plugin configuration. The cluster ID, target Kubernetes version, and at least one whitelist CIDR are always required by the API, even when the intent is only to toggle a plugin.
 
-Use `--dry-run` to preview the update request without executing it.
+Plugin flags (`--load-balancer-plugin`, `--block-store-csi-plugin`) are only sent when explicitly provided; omitting them leaves the current plugin state unchanged.
+
+Use `--dry-run` to preview the update payload without executing the request.
 
 ## Synopsis
 
@@ -20,27 +22,56 @@ grn vks update-cluster
 
 ## Options
 
-`--cluster-id` (required)
-: ID of the cluster to update.
+**`--cluster-id`** (string)
 
-`--k8s-version` (required)
-: Target Kubernetes version (e.g. `v1.29.1`). Must be the same or a higher patch/minor version than the current version.
+ID of the cluster to update.
 
-`--whitelist-node-cidrs` (required)
-: Comma-separated list of CIDRs allowed to communicate with cluster nodes. At least one value is required (e.g. `10.0.0.0/8,192.168.0.0/16`).
+- Required: Yes
 
-`--load-balancer-plugin` (optional)
-: Set the load balancer plugin state. When omitted, the current state is left unchanged. Accepted values: `enabled`, `disabled`.
+**`--k8s-version`** (string)
 
-`--block-store-csi-plugin` (optional)
-: Set the block store CSI plugin state. When omitted, the current state is left unchanged. Accepted values: `enabled`, `disabled`.
+Target Kubernetes version (e.g. `v1.29.1`). Must be the same or a higher version than the cluster's current version.
 
-`--dry-run` (optional)
-: Print the update payload without sending the request.
+- Required: Yes
+- Constraints: 1–50 characters.
+- See available versions with [list-cluster-versions](list-cluster-versions.md).
+
+**`--whitelist-node-cidrs`** (list&lt;string&gt;)
+
+CIDRs allowed to communicate with cluster nodes, comma-separated. At least one value is required.
+
+- Required: Yes
+- Constraints: 1–30 entries.
+- Syntax: `10.0.0.0/8,192.168.0.0/16`
+
+**`--load-balancer-plugin`** (string)
+
+Load balancer plugin state. When omitted, the current state is left unchanged.
+
+- Required: No
+- Possible values: `enabled`, `disabled`
+
+**`--block-store-csi-plugin`** (string)
+
+Block store CSI plugin state. When omitted, the current state is left unchanged.
+
+- Required: No
+- Possible values: `enabled`, `disabled`
+
+**`--dry-run`** (boolean)
+
+Print the update payload without sending the request.
+
+- Required: No
+- Default: `false`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 
-Upgrade Kubernetes version and set whitelist CIDRs:
+Upgrade the Kubernetes version and set whitelist CIDRs:
 
 ```bash
 grn vks update-cluster \
