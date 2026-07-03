@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.0
+
+### Enhancements
+* **core**: Guard --endpoint-url against sending the IAM bearer token to untrusted hosts (SEC-08): hosts outside vngcloud.vn/greenode.ai are warned over TLS, and blocked when there is no TLS protection (plain http or --no-verify-ssl) unless --allow-untrusted-endpoint is set
+
+### Bug Fixes
+* **core**: Redact credential fields (embedded kubeconfig, tokens, client certs/keys, secrets) in --debug request/response logging so 'update-kubeconfig --debug' and similar no longer print long-lived credentials to stderr (SEC-07)
+
+### API Changes
+* **vks**: create-cluster now provisions the control plane only and no longer creates a default node group: removed --node-group-name/--flavor-id/--os/--disk-type/--ssh-key-id/--disk-size/--num-nodes/--private-nodes/--security-groups/--labels/--taints. Create workers separately with create-nodegroup
+
 ## 1.4.1
 
 ### Enhancements

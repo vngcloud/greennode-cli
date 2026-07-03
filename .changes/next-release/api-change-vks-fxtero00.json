@@ -1,5 +1,0 @@
-{
-  "type": "api-change",
-  "category": "vks",
-  "description": "create-cluster now provisions the control plane only and no longer creates a default node group: removed --node-group-name/--flavor-id/--os/--disk-type/--ssh-key-id/--disk-size/--num-nodes/--private-nodes/--security-groups/--labels/--taints. Create workers separately with create-nodegroup"
-}

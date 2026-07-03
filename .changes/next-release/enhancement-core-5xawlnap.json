@@ -1,5 +1,0 @@
-{
-  "type": "enhancement",
-  "category": "core",
-  "description": "Guard --endpoint-url against sending the IAM bearer token to untrusted hosts (SEC-08): hosts outside vngcloud.vn/greenode.ai are warned over TLS, and blocked when there is no TLS protection (plain http or --no-verify-ssl) unless --allow-untrusted-endpoint is set"
-}
