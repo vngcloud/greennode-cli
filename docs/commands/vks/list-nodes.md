@@ -2,7 +2,7 @@
 
 ## Description
 
-List the nodes belonging to a node group, including their status and details. Results are paginated.
+List the nodes belonging to a node group, including their status and details. Results are paginated (0-based page index). Unlike `list-clusters` and `list-nodegroups`, this command does not auto-paginate; pass `--page` to navigate through result pages.
 
 ## Synopsis
 
@@ -16,17 +16,35 @@ grn vks list-nodes
 
 ## Options
 
-`--cluster-id` (required)
-: ID of the cluster that owns the node group.
+**`--cluster-id`** (string)
 
-`--nodegroup-id` (required)
-: ID of the node group whose nodes to list.
+ID of the cluster that owns the node group.
 
-`--page` (optional, default 0)
-: Page number. Pagination is 0-based (page 0 is the first page).
+- Required: Yes
 
-`--page-size` (optional, default 50)
-: Number of nodes per page.
+**`--nodegroup-id`** (string)
+
+ID of the node group whose nodes to list.
+
+- Required: Yes
+
+**`--page`** (integer)
+
+Page number to retrieve. Pagination is 0-based: page `0` is the first page.
+
+- Required: No
+- Default: `0`
+
+**`--page-size`** (integer)
+
+Number of nodes to return per page.
+
+- Required: No
+- Default: `50`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 

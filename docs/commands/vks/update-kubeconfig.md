@@ -2,11 +2,13 @@
 
 ## Description
 
-Fetch the cluster kubeconfig and merge it into your local kubeconfig file, then (by default) set it as the current context. This is similar to `aws eks update-kubeconfig`.
+Fetch the cluster kubeconfig and merge it into your local kubeconfig file. By default the merged context is set as the current context. This is similar to `aws eks update-kubeconfig`.
 
-The kubeconfig must already be `ACTIVE`. If no kubeconfig exists yet (status `NONE`), run `grn vks generate-kubeconfig --cluster-id <value>` first and wait until it becomes active.
+The kubeconfig must already be `ACTIVE`. If no kubeconfig exists yet (status `NONE`), run [generate-kubeconfig](generate-kubeconfig.md) first and wait until it becomes active.
 
 The target file is resolved in this order: the `--kubeconfig` flag, then the first entry of `$KUBECONFIG`, then `~/.kube/config`. The merged context is named `vks_<cluster-id>` by default; override it with `--alias`.
+
+Use `--dry-run` to preview what would be written without modifying any file.
 
 ## Synopsis
 
@@ -21,20 +23,43 @@ grn vks update-kubeconfig
 
 ## Options
 
-`--cluster-id` (required)
-: The ID of the cluster.
+**`--cluster-id`** (string)
 
-`--kubeconfig` (optional)
-: Path to the kubeconfig file to update. Defaults to `$KUBECONFIG` (first entry) or `~/.kube/config`.
+ID of the cluster whose kubeconfig to fetch and merge.
 
-`--alias` (optional)
-: Context name to use for the merged cluster. Default: `vks_<cluster-id>`.
+- Required: Yes
 
-`--no-set-context` (optional)
-: Do not set the merged context as the current context.
+**`--kubeconfig`** (string)
 
-`--dry-run` (optional)
-: Print what would be written without modifying the kubeconfig file.
+Path to the kubeconfig file to update.
+
+- Required: No
+- Default: first entry of `$KUBECONFIG`, or `~/.kube/config`
+
+**`--alias`** (string)
+
+Context name to use for the merged cluster entry.
+
+- Required: No
+- Default: `vks_<cluster-id>`
+
+**`--no-set-context`** (boolean)
+
+Do not set the merged context as the current context after merging.
+
+- Required: No
+- Default: `false`
+
+**`--dry-run`** (boolean)
+
+Print what would be written without modifying the kubeconfig file.
+
+- Required: No
+- Default: `false`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 

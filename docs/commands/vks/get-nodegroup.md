@@ -14,11 +14,21 @@ grn vks get-nodegroup
 
 ## Options
 
-`--cluster-id` (required)
-: ID of the cluster that owns the node group.
+**`--cluster-id`** (string)
 
-`--nodegroup-id` (required)
-: ID of the node group to retrieve.
+ID of the cluster that owns the node group.
+
+- Required: Yes
+
+**`--nodegroup-id`** (string)
+
+ID of the node group to retrieve.
+
+- Required: Yes
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 
