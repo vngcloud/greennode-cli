@@ -1,0 +1,5 @@
+{
+  "type": "bugfix",
+  "category": "core",
+  "description": "Redact credential fields (embedded kubeconfig, tokens, client certs/keys, secrets) in --debug request/response logging so 'update-kubeconfig --debug' and similar no longer print long-lived credentials to stderr (SEC-07)"
+}
