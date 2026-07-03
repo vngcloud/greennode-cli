@@ -25,6 +25,13 @@ grn vks create-cluster
     [--release-channel <value>]
     [--load-balancer-plugin <enabled|disabled>]
     [--block-store-csi-plugin <enabled|disabled>]
+    [--service-endpoint <enabled|disabled>]
+    [--az-strategy <value>]
+    [--secondary-subnets <value>]
+    [--list-subnet-ids <value>]
+    [--node-netmask-size <value>]
+    [--auto-upgrade-config <value>]
+    [--auto-healing-config <value>]
     [--dry-run]
 ```
 
@@ -62,6 +69,27 @@ grn vks create-cluster
 
 `--block-store-csi-plugin` (optional, default `enabled`)
 : Block store CSI plugin state. Accepted values: `enabled`, `disabled`.
+
+`--service-endpoint` (optional, default `disabled`)
+: Service endpoint state. Accepted values: `enabled`, `disabled`.
+
+`--az-strategy` (optional, default `SINGLE`)
+: Availability-zone strategy for the cluster.
+
+`--secondary-subnets` (optional)
+: Comma-separated list of secondary subnet IDs.
+
+`--list-subnet-ids` (optional)
+: Comma-separated list of subnet IDs for the cluster.
+
+`--node-netmask-size` (optional)
+: Node netmask size (integer). Only sent when explicitly provided.
+
+`--auto-upgrade-config` (optional)
+: Auto-upgrade schedule. Shorthand `time=03:00,weekdays=Mon` or JSON `{"weekdays":"Mon,Wed,Fri","time":"03:00"}`. Use JSON when `weekdays` has multiple days (shorthand splits on commas).
+
+`--auto-healing-config` (optional)
+: Auto-healing config. Shorthand `enableAutoHealing=true,maxUnhealthy=20%,unhealthyRange=[2-5],timeoutUnhealthy=10` or JSON. `enableAutoHealing` is a boolean, `timeoutUnhealthy` an integer.
 
 `--dry-run` (optional)
 : Validate all parameters and print a report without sending the create request.

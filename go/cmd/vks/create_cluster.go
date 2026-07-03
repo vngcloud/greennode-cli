@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 )
 
 var createClusterCmd = &cobra.Command{
@@ -36,6 +37,13 @@ func init() {
 	f.String("release-channel", "STABLE", "Release channel (RAPID, STABLE)")
 	f.String("load-balancer-plugin", "enabled", "Load balancer plugin (enabled, disabled)")
 	f.String("block-store-csi-plugin", "enabled", "Block store CSI plugin (enabled, disabled)")
+	f.String("service-endpoint", "disabled", "Service endpoint (enabled, disabled)")
+	f.String("az-strategy", "SINGLE", "Availability zone strategy")
+	f.String("secondary-subnets", "", "Secondary subnet IDs (comma-separated)")
+	f.String("list-subnet-ids", "", "Subnet IDs for the cluster (comma-separated)")
+	f.Int("node-netmask-size", 0, "Node netmask size")
+	f.String("auto-upgrade-config", "", "Auto-upgrade config (shorthand time=03:00,weekdays=Mon or JSON; use JSON for multiple weekdays)")
+	f.String("auto-healing-config", "", "Auto-healing config (shorthand enableAutoHealing=true,maxUnhealthy=20%,unhealthyRange=[2-5],timeoutUnhealthy=10 or JSON)")
 	f.Bool("dry-run", false, "Validate parameters without creating the cluster")
 }
 
@@ -48,12 +56,18 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	cidr, _ := cmd.Flags().GetString("cidr")
 	description, _ := cmd.Flags().GetString("description")
 	releaseChannel, _ := cmd.Flags().GetString("release-channel")
+	azStrategy, _ := cmd.Flags().GetString("az-strategy")
+	secondarySubnets, _ := cmd.Flags().GetString("secondary-subnets")
+	listSubnetIDs, _ := cmd.Flags().GetString("list-subnet-ids")
+	autoUpgradeStr, _ := cmd.Flags().GetString("auto-upgrade-config")
+	autoHealingStr, _ := cmd.Flags().GetString("auto-healing-config")
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	// Parse enabled/disabled toggle flags.
 	privateClusterVal, _ := cmd.Flags().GetString("private-cluster")
 	lbPluginVal, _ := cmd.Flags().GetString("load-balancer-plugin")
 	csiPluginVal, _ := cmd.Flags().GetString("block-store-csi-plugin")
+	serviceEndpointVal, _ := cmd.Flags().GetString("service-endpoint")
 	enablePrivateCluster, err := parseToggle("private-cluster", privateClusterVal)
 	if err != nil {
 		return err
@@ -63,6 +77,10 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	enabledCSIPlugin, err := parseToggle("block-store-csi-plugin", csiPluginVal)
+	if err != nil {
+		return err
+	}
+	enabledServiceEndpoint, err := parseToggle("service-endpoint", serviceEndpointVal)
 	if err != nil {
 		return err
 	}
@@ -79,8 +97,8 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 		"releaseChannel":             releaseChannel,
 		"enabledBlockStoreCsiPlugin": enabledCSIPlugin,
 		"enabledLoadBalancerPlugin":  enabledLBPlugin,
-		"enabledServiceEndpoint":     false,
-		"azStrategy":                 "SINGLE",
+		"enabledServiceEndpoint":     enabledServiceEndpoint,
+		"azStrategy":                 azStrategy,
 	}
 
 	if cidr != "" {
@@ -88,6 +106,30 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	}
 	if description != "" {
 		body["description"] = description
+	}
+	if secondarySubnets != "" {
+		body["secondarySubnets"] = parseCommaSeparated(secondarySubnets)
+	}
+	if listSubnetIDs != "" {
+		body["listSubnetIds"] = parseCommaSeparated(listSubnetIDs)
+	}
+	if cmd.Flags().Changed("node-netmask-size") {
+		nodeNetmaskSize, _ := cmd.Flags().GetInt("node-netmask-size")
+		body["nodeNetmaskSize"] = nodeNetmaskSize
+	}
+	if autoUpgradeStr != "" {
+		uc, err := cli.ParseStructFlag(autoUpgradeStr)
+		if err != nil {
+			return fmt.Errorf("--auto-upgrade-config: %w", err)
+		}
+		body["autoUpgradeConfig"] = uc
+	}
+	if autoHealingStr != "" {
+		hc, err := cli.ParseStructFlagTyped(autoHealingStr, []string{"timeoutUnhealthy"}, []string{"enableAutoHealing"})
+		if err != nil {
+			return fmt.Errorf("--auto-healing-config: %w", err)
+		}
+		body["autoHealingConfig"] = hc
 	}
 
 	if dryRun {

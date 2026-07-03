@@ -85,3 +85,26 @@ func TestParseStructFlagErrors(t *testing.T) {
 		t.Error("non-integer int field should error")
 	}
 }
+
+func TestParseStructFlagTypedBool(t *testing.T) {
+	got, err := ParseStructFlagTyped("enableAutoHealing=true,timeoutUnhealthy=10,maxUnhealthy=20%",
+		[]string{"timeoutUnhealthy"}, []string{"enableAutoHealing"})
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	if got["enableAutoHealing"] != true {
+		t.Errorf("enableAutoHealing = %#v, want bool true", got["enableAutoHealing"])
+	}
+	if got["timeoutUnhealthy"] != 10 {
+		t.Errorf("timeoutUnhealthy = %#v, want int 10", got["timeoutUnhealthy"])
+	}
+	if got["maxUnhealthy"] != "20%" {
+		t.Errorf("maxUnhealthy = %#v, want string 20%%", got["maxUnhealthy"])
+	}
+}
+
+func TestParseStructFlagTypedBadBool(t *testing.T) {
+	if _, err := ParseStructFlagTyped("enableAutoHealing=yes", nil, []string{"enableAutoHealing"}); err == nil {
+		t.Error("invalid bool should error")
+	}
+}
