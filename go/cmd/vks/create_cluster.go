@@ -24,9 +24,9 @@ func init() {
 	f.String("k8s-version", "", "Kubernetes version (required)")
 	f.String("network-type", "", "Network type: TIGERA, CILIUM_OVERLAY, CILIUM_NATIVE_ROUTING (required)")
 	f.String("vpc-id", "", "VPC ID (required)")
-	f.String("subnet-id", "", "Subnet ID (required)")
+	f.String("subnet-id", "", "Subnet ID")
 
-	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id", "subnet-id"} {
+	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id"} {
 		createClusterCmd.MarkFlagRequired(name)
 	}
 
@@ -92,7 +92,6 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 		"version":                    k8sVersion,
 		"networkType":                networkType,
 		"vpcId":                      vpcID,
-		"subnetId":                   subnetID,
 		"enablePrivateCluster":       enablePrivateCluster,
 		"releaseChannel":             releaseChannel,
 		"enabledBlockStoreCsiPlugin": enabledCSIPlugin,
@@ -101,6 +100,9 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 		"azStrategy":                 azStrategy,
 	}
 
+	if subnetID != "" {
+		body["subnetId"] = subnetID
+	}
 	if cidr != "" {
 		body["cidr"] = cidr
 	}

@@ -18,7 +18,7 @@ grn vks create-cluster
     --k8s-version <value>
     --network-type <value>
     --vpc-id <value>
-    --subnet-id <value>
+    [--subnet-id <value>]
     [--cidr <value>]
     [--description <value>]
     [--private-cluster <enabled|disabled>]
@@ -49,8 +49,8 @@ grn vks create-cluster
 `--vpc-id` (required)
 : VPC ID where the cluster will be provisioned.
 
-`--subnet-id` (required)
-: Subnet ID for the cluster control plane.
+`--subnet-id` (optional)
+: Subnet ID for the cluster control plane. Optional per the API — provide either `--subnet-id` or `--list-subnet-ids` (or neither); the server validates.
 
 `--cidr` (optional)
 : Pod CIDR block. Required when `--network-type` is `TIGERA` or `CILIUM_OVERLAY` (e.g. `10.96.0.0/12`).
