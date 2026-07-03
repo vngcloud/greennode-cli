@@ -1,0 +1,5 @@
+{
+  "type": "enhancement",
+  "category": "core",
+  "description": "cli.ParseStructFlag gains bool-field coercion (ParseStructFlagTyped) so struct flags can carry boolean values in shorthand"
+}

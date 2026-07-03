@@ -31,6 +31,14 @@ func ParseCommaSeparated(s string) []string {
 // returns (nil, nil). Returns an error on malformed JSON, a shorthand entry
 // without '=', or a non-integer value for an int field.
 func ParseStructFlag(value string, intFields ...string) (map[string]interface{}, error) {
+	return ParseStructFlagTyped(value, intFields, nil)
+}
+
+// ParseStructFlagTyped is ParseStructFlag with explicit int and bool field
+// lists. In shorthand form, keys in intFields are coerced to int and keys in
+// boolFields to bool ("true"/"false"); all other values stay strings. JSON is
+// passed through as decoded.
+func ParseStructFlagTyped(value string, intFields, boolFields []string) (map[string]interface{}, error) {
 	v := strings.TrimSpace(value)
 	if v == "" {
 		return nil, nil
@@ -47,6 +55,10 @@ func ParseStructFlag(value string, intFields ...string) (map[string]interface{},
 	for _, f := range intFields {
 		ints[f] = true
 	}
+	bools := map[string]bool{}
+	for _, f := range boolFields {
+		bools[f] = true
+	}
 	out := map[string]interface{}{}
 	for _, pair := range strings.Split(v, ",") {
 		pair = strings.TrimSpace(pair)
@@ -59,13 +71,20 @@ func ParseStructFlag(value string, intFields ...string) (map[string]interface{},
 		}
 		key := strings.TrimSpace(pair[:idx])
 		val := strings.TrimSpace(pair[idx+1:])
-		if ints[key] {
+		switch {
+		case ints[key]:
 			n, err := strconv.Atoi(val)
 			if err != nil {
 				return nil, fmt.Errorf("%s must be an integer, got %q", key, val)
 			}
 			out[key] = n
-		} else {
+		case bools[key]:
+			b, err := strconv.ParseBool(val)
+			if err != nil {
+				return nil, fmt.Errorf("%s must be a boolean (true/false), got %q", key, val)
+			}
+			out[key] = b
+		default:
 			out[key] = val
 		}
 	}
