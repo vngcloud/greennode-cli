@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -12,7 +11,9 @@ import (
 var createClusterCmd = &cobra.Command{
 	Use:   "create-cluster",
 	Short: "Create a new VKS cluster",
-	RunE:  runCreateCluster,
+	Long: "Create a new VKS cluster (control plane only). " +
+		"Add worker nodes afterwards with 'grn vks create-nodegroup'.",
+	RunE: runCreateCluster,
 }
 
 func init() {
@@ -23,14 +24,8 @@ func init() {
 	f.String("network-type", "", "Network type: TIGERA, CILIUM_OVERLAY, CILIUM_NATIVE_ROUTING (required)")
 	f.String("vpc-id", "", "VPC ID (required)")
 	f.String("subnet-id", "", "Subnet ID (required)")
-	// Node group settings (required)
-	f.String("node-group-name", "", "Default node group name (required)")
-	f.String("flavor-id", "", "Flavor ID for node group (required)")
-	f.String("os", "ubuntu", "Node group OS image (ubuntu, linux, rocky)")
-	f.String("disk-type", "", "Disk type ID (required)")
-	f.String("ssh-key-id", "", "SSH key ID for node group (required)")
 
-	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id", "subnet-id", "node-group-name", "flavor-id", "disk-type", "ssh-key-id"} {
+	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id", "subnet-id"} {
 		createClusterCmd.MarkFlagRequired(name)
 	}
 
@@ -41,14 +36,6 @@ func init() {
 	f.String("release-channel", "STABLE", "Release channel (RAPID, STABLE)")
 	f.String("load-balancer-plugin", "enabled", "Load balancer plugin (enabled, disabled)")
 	f.String("block-store-csi-plugin", "enabled", "Block store CSI plugin (enabled, disabled)")
-
-	// Node group settings (optional)
-	f.Int("disk-size", 100, "Disk size in GiB (20-5000)")
-	f.Int("num-nodes", 1, "Number of nodes (0-10)")
-	f.String("private-nodes", "disabled", "Private nodes (enabled, disabled)")
-	f.String("security-groups", "", "Security group IDs (comma-separated)")
-	f.String("labels", "", "Node labels as key=value pairs (comma-separated)")
-	f.String("taints", "", "Node taints as key=value:effect (comma-separated)")
 	f.Bool("dry-run", false, "Validate parameters without creating the cluster")
 }
 
@@ -61,29 +48,13 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	cidr, _ := cmd.Flags().GetString("cidr")
 	description, _ := cmd.Flags().GetString("description")
 	releaseChannel, _ := cmd.Flags().GetString("release-channel")
-
-	ngName, _ := cmd.Flags().GetString("node-group-name")
-	flavorID, _ := cmd.Flags().GetString("flavor-id")
-	osImage, _ := cmd.Flags().GetString("os")
-	diskType, _ := cmd.Flags().GetString("disk-type")
-	sshKeyID, _ := cmd.Flags().GetString("ssh-key-id")
-	diskSize, _ := cmd.Flags().GetInt("disk-size")
-	numNodes, _ := cmd.Flags().GetInt("num-nodes")
-	securityGroups, _ := cmd.Flags().GetString("security-groups")
-	labels, _ := cmd.Flags().GetString("labels")
-	taints, _ := cmd.Flags().GetString("taints")
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	// Parse enabled/disabled toggle flags.
 	privateClusterVal, _ := cmd.Flags().GetString("private-cluster")
-	privateNodesVal, _ := cmd.Flags().GetString("private-nodes")
 	lbPluginVal, _ := cmd.Flags().GetString("load-balancer-plugin")
 	csiPluginVal, _ := cmd.Flags().GetString("block-store-csi-plugin")
 	enablePrivateCluster, err := parseToggle("private-cluster", privateClusterVal)
-	if err != nil {
-		return err
-	}
-	enablePrivateNodes, err := parseToggle("private-nodes", privateNodesVal)
 	if err != nil {
 		return err
 	}
@@ -96,36 +67,8 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Build node group
-	nodeGroup := map[string]interface{}{
-		"name":               ngName,
-		"flavorId":           flavorID,
-		"os":                 osImage,
-		"diskSize":           diskSize,
-		"diskType":           diskType,
-		"numNodes":           numNodes,
-		"enablePrivateNodes": enablePrivateNodes,
-		"sshKeyId":           sshKeyID,
-		"upgradeConfig": map[string]interface{}{
-			"maxSurge":       1,
-			"maxUnavailable": 0,
-			"strategy":       "SURGE",
-		},
-		"subnetId":       subnetID,
-		"securityGroups": []string{},
-	}
-
-	if securityGroups != "" {
-		nodeGroup["securityGroups"] = parseCommaSeparated(securityGroups)
-	}
-	if labels != "" {
-		nodeGroup["labels"] = parseLabels(labels)
-	}
-	if taints != "" {
-		nodeGroup["taints"] = parseTaints(taints)
-	}
-
-	// Build cluster body
+	// Build cluster body. Node groups are created separately via
+	// 'grn vks create-nodegroup'.
 	body := map[string]interface{}{
 		"name":                       name,
 		"version":                    k8sVersion,
@@ -138,7 +81,6 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 		"enabledLoadBalancerPlugin":  enabledLBPlugin,
 		"enabledServiceEndpoint":     false,
 		"azStrategy":                 "SINGLE",
-		"nodeGroups":                 []interface{}{nodeGroup},
 	}
 
 	if cidr != "" {
@@ -149,7 +91,7 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	}
 
 	if dryRun {
-		return validateCreateCluster(name, ngName, networkType, cidr, diskSize, numNodes)
+		return validateCreateCluster(name, networkType, cidr)
 	}
 
 	apiClient, err := createClient(cmd)
@@ -166,9 +108,8 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	return outputResult(cmd, result)
 }
 
-func validateCreateCluster(name, ngName, networkType, cidr string, diskSize, numNodes int) error {
+func validateCreateCluster(name, networkType, cidr string) error {
 	clusterNameRE := regexp.MustCompile(`^[a-z0-9][a-z0-9\-]{3,18}[a-z0-9]$`)
-	ngNameRE := regexp.MustCompile(`^[a-z0-9][a-z0-9-]{3,13}[a-z0-9]$`)
 
 	var errors []string
 
@@ -179,19 +120,6 @@ func validateCreateCluster(name, ngName, networkType, cidr string, diskSize, num
 
 	if (networkType == "TIGERA" || networkType == "CILIUM_OVERLAY") && cidr == "" {
 		errors = append(errors, fmt.Sprintf("--cidr is required when network-type is %s", networkType))
-	}
-
-	if !ngNameRE.MatchString(ngName) {
-		errors = append(errors, fmt.Sprintf(
-			"Node group name '%s' is invalid. Must be 5-15 chars, lowercase alphanumeric and hyphens, start/end with alphanumeric.", ngName))
-	}
-
-	if diskSize < 20 || diskSize > 5000 {
-		errors = append(errors, fmt.Sprintf("Disk size %s out of range (20-5000 GiB)", strconv.Itoa(diskSize)))
-	}
-
-	if numNodes < 0 || numNodes > 10 {
-		errors = append(errors, fmt.Sprintf("Number of nodes %s out of range (0-10)", strconv.Itoa(numNodes)))
 	}
 
 	fmt.Println("=== DRY RUN: Validation results ===")
