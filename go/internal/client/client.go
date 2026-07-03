@@ -209,7 +209,7 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 		if c.debug {
 			fmt.Fprintf(os.Stderr, "[debug] %s %s\n", method, fullURL)
 			if jsonBody != nil {
-				fmt.Fprintf(os.Stderr, "[debug] request body: %s\n", string(jsonBody))
+				fmt.Fprintf(os.Stderr, "[debug] request body: %s\n", redactDebugBody(string(jsonBody)))
 			}
 		}
 
@@ -228,7 +228,7 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 		resp.Body.Close()
 
 		if c.debug {
-			fmt.Fprintf(os.Stderr, "[debug] response %d: %s\n", resp.StatusCode, string(respBody))
+			fmt.Fprintf(os.Stderr, "[debug] response %d: %s\n", resp.StatusCode, redactDebugBody(string(respBody)))
 		}
 
 		// 401 — refresh token and retry once
