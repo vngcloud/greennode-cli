@@ -22,8 +22,13 @@ func NewClient(cmd *cobra.Command, serviceName string) (*client.GreenodeClient, 
 	endpointURL, _ := cmd.Flags().GetString("endpoint-url")
 	noVerifySSL, _ := cmd.Flags().GetBool("no-verify-ssl")
 	debug, _ := cmd.Flags().GetBool("debug")
+	allowUntrusted, _ := cmd.Flags().GetBool("allow-untrusted-endpoint")
 	connectTimeout, _ := cmd.Flags().GetInt("cli-connect-timeout")
 	readTimeout, _ := cmd.Flags().GetInt("cli-read-timeout")
+
+	if err := CheckEndpoint(endpointURL, noVerifySSL, allowUntrusted); err != nil {
+		return nil, err
+	}
 
 	cfg, err := config.LoadConfig(profile)
 	if err != nil {

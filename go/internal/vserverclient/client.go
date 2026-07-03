@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vngcloud/greennode-cli/internal/auth"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/client"
 	"github.com/vngcloud/greennode-cli/internal/config"
 	"github.com/vngcloud/greennode-cli/internal/formatter"
@@ -19,8 +20,13 @@ func BuildClient(cmd *cobra.Command) (*client.GreenodeClient, *config.Config, er
 	endpointURL, _ := cmd.Flags().GetString("endpoint-url")
 	noVerifySSL, _ := cmd.Flags().GetBool("no-verify-ssl")
 	debug, _ := cmd.Flags().GetBool("debug")
+	allowUntrusted, _ := cmd.Flags().GetBool("allow-untrusted-endpoint")
 	connectTimeout, _ := cmd.Flags().GetInt("cli-connect-timeout")
 	readTimeout, _ := cmd.Flags().GetInt("cli-read-timeout")
+
+	if err := cli.CheckEndpoint(endpointURL, noVerifySSL, allowUntrusted); err != nil {
+		return nil, nil, err
+	}
 
 	cfg, err := config.LoadConfig(profile)
 	if err != nil {
