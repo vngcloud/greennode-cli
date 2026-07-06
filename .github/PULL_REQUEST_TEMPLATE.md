@@ -12,8 +12,8 @@ Brief description of what this PR does.
 
 ## Checklist
 
-- [ ] Tests added/updated and passing (`python -m pytest tests/ -v`)
-- [ ] Changelog entry added (`./scripts/new-change`)
+- [ ] Tests added/updated and passing (`cd go && go test ./...`)
+- [ ] PR title is a Conventional Commit (`feat:`/`fix:`/`feat!:`) — drives the release
 - [ ] Documentation updated (if applicable)
 - [ ] Code follows existing patterns
 

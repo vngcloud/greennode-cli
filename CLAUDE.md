@@ -139,8 +139,11 @@ GOOS=windows GOARCH=amd64 go build -o grn-windows-amd64.exe .
 
 - **Do not auto commit/push** — only change source code, user will ask for commit/push
 - **Main branch is protected** — must use PR
-- **Changelog**: `./scripts/new-change` for every change
-- **Release**: `./scripts/bump-version minor` → `git push && git push --tags`
+- **Versioning/CHANGELOG are automated by release-please** — never edit the version
+  (`go/cmd/root.go`) or `CHANGELOG.md` by hand
+- **PR titles are Conventional Commits** (`feat:`/`fix:`/`feat!:`) — PRs are squash-merged,
+  so the title becomes the release commit release-please reads
+- **Release**: merge the `chore: release main` PR → tags `vX.Y.Z` + GitHub Release + binaries
 
 ## Documentation update rule
 
@@ -157,7 +160,6 @@ GOOS=windows GOARCH=amd64 go build -o grn-windows-amd64.exe .
 - `CLAUDE.md`
 - `CONTRIBUTING.md`
 - `docs/development/contributing.md` and `docs/development/architecture.md` (adding services/commands)
-- `./scripts/new-change` — changelog fragment
 
 > Note: `docs/superpowers/` (design specs/plans) is local-only and git-ignored —
 > never commit it to this public repo.
