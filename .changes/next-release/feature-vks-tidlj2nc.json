@@ -1,0 +1,5 @@
+{
+  "type": "feature",
+  "category": "vks",
+  "description": "create-cluster can optionally attach a node group at creation via the new spec 'nodeGroup' field (singular object; the deprecated 'nodeGroups' array is not used): set --node-group-name (+ --flavor-id/--disk-type/--ssh-key-id, and optional --os/--disk-size/--num-nodes/--private-nodes/--security-groups/--labels/--taints); omit them to create the control plane only"
+}
