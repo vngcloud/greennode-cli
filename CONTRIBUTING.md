@@ -23,6 +23,22 @@ cd go
 CGO_ENABLED=0 go build -o grn .
 ```
 
+## Adding a new product CLI
+
+Each product is a self-registering command group under `go/cmd/<product>/`, mounted
+into the single `grn` binary. Scaffold one in seconds:
+
+```bash
+./scripts/new-product <product>      # e.g. vdb  (lowercase, valid Go package name)
+```
+
+This generates `go/cmd/<product>/` (parent command, an example command, shared
+`createClient`/`outputResult` helpers, a starter test, and a product `CLAUDE.md`),
+creates `docs/commands/<product>/`, wires self-registration in `go/cmd/register.go`,
+and appends `.github/CODEOWNERS` lines. CI and the conventions test pick up the new
+package automatically. Then follow the "Next steps" the script prints (add your
+`<product>_endpoint` to `internal/config` REGIONS, replace the example command, etc.).
+
 ## Development Workflow
 
 ### 1. Create a feature branch

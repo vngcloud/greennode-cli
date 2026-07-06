@@ -1,0 +1,26 @@
+package __PRODUCT__
+
+import (
+	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
+)
+
+// __TITLE__Cmd is the parent command for all __PRODUCT__ subcommands.
+var __TITLE__Cmd = &cobra.Command{
+	Use:   "__PRODUCT__",
+	Short: "__DISPLAY__ commands",
+	Long:  "Manage __DISPLAY__ resources.",
+	// Reject unknown subcommands (parent groups don't error by default in cobra).
+	Args: cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
+}
+
+func init() {
+	// Register each subcommand here.
+	__TITLE__Cmd.AddCommand(listExamplesCmd)
+
+	// Self-register with the CLI so root.go mounts this product automatically.
+	cli.RegisterService(__TITLE__Cmd)
+}

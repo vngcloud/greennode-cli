@@ -1,0 +1,30 @@
+# __DISPLAY__ CLI — product notes
+
+Product-specific quirks for the `__PRODUCT__` command group. The root `CLAUDE.md`
+covers repo-wide conventions; this file records what is specific to __DISPLAY__.
+
+## Setup checklist (delete items as you complete them)
+
+- [ ] Add `"__PRODUCT___endpoint": "https://..."` to every region in
+      `go/internal/config/config.go` (`REGIONS`). `cli.NewClient(cmd, "__PRODUCT__")`
+      resolves the endpoint from this key.
+- [ ] Replace the `list-examples` starter command with real commands.
+- [ ] **greennode-cli is the source of truth** for endpoints/body/fields — when in
+      doubt, read the API and record quirks here rather than trusting stale specs.
+- [ ] Fill in the API quirks section below as you discover them.
+
+## Conventions (enforced by repo conventions test)
+
+- Command names are `verb-noun` (`list-examples`, `create-widget`, `delete-widget`).
+  Allowed verbs: list, get, create, update, delete, configure, upgrade, validate,
+  generate, wait.
+- Destructive commands (`delete-*`, disruptive ops) take `--dry-run` and `--force`;
+  use `cli.Confirm` / `cli.DryRunNotice`.
+- Struct-valued flags use `cli.ParseStructFlag` (shorthand `k=v,k2=v2` or JSON).
+- Always `validator.ValidateID(id, "flag")` before interpolating an ID into a URL.
+- Output through `cli.Output` (respects `--output` / `--query` / `--color`).
+
+## API quirks
+
+_Record pagination base (0- vs 1-indexed), status codes, field casing, and any
+surprises here as you find them._
