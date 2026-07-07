@@ -38,7 +38,7 @@ Prefer the release-please flow for normal releases.
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `run-tests.yml` | PR + push | Build + test Go binary |
+| `run-tests.yml` | PR | Lint (gofmt + go vet), build, and test the Go binary |
 | `pr-title.yml` | PR opened/edited | Enforce Conventional Commits PR title |
 | `release-please.yml` | Push to `main` | Maintain the release PR; on merge, tag + release + build binaries |
 | `release.yml` | Tag push `v*`, dispatch, or called by release-please | Build multi-platform binaries + attach to the release |
