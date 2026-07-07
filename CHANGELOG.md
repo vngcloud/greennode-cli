@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.7.0](https://github.com/vngcloud/greennode-cli/compare/v1.6.0...v1.7.0) (2026-07-07)
+
+
+### Features
+
+* scaffold command for new product CLIs ([#32](https://github.com/vngcloud/greennode-cli/issues/32)) ([9e1b4cb](https://github.com/vngcloud/greennode-cli/commit/9e1b4cbd222f9a7e7861596b30f1d177555032b4))
+
+
+### Documentation
+
+* per-product CLAUDE.md (tier 2) and agent skills ([#35](https://github.com/vngcloud/greennode-cli/issues/35)) ([3a1b7cd](https://github.com/vngcloud/greennode-cli/commit/3a1b7cd4df227dbb42aadc4dca2a905174011835))
+* rebrand VNG Cloud to GreenNode in VKS and shared text ([#38](https://github.com/vngcloud/greennode-cli/issues/38)) ([d0fd019](https://github.com/vngcloud/greennode-cli/commit/d0fd0195c2d4643fac60231f7db5ed18b65b9b24))
+* **vks:** AWS-CLI-style reference format for all commands ([#30](https://github.com/vngcloud/greennode-cli/issues/30)) ([1fe168d](https://github.com/vngcloud/greennode-cli/commit/1fe168deb60cb4bdefd162abc55594db2a8d879c))
+
 ## 1.6.0
 
 ### Features
