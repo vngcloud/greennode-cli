@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/vngcloud/greennode-cli/compare/v1.7.1...v1.7.2) (2026-07-07)
+
+
+### Bug Fixes
+
+* **vks:** validate network-type and auto-healing constraints found in real API calls ([#42](https://github.com/vngcloud/greennode-cli/issues/42)) ([810afee](https://github.com/vngcloud/greennode-cli/commit/810afee445bdfc5366b30d2553b1c67db1e9301b))
+
 ## [1.7.1](https://github.com/vngcloud/greennode-cli/compare/v1.7.0...v1.7.1) (2026-07-07)
 
 
