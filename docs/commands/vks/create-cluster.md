@@ -4,9 +4,9 @@
 
 Create a new VKS cluster. By default only the control plane is provisioned; add worker nodes afterwards with [create-nodegroup](create-nodegroup.md).
 
-When `--network-type` is `TIGERA` or `CILIUM_OVERLAY`, `--cidr` is required. The load balancer and block store CSI plugins are enabled by default.
+When `--network-type` is `TIGERA` or `CILIUM_OVERLAY`, `--cidr` is required. When it is `CILIUM_NATIVE_ROUTING`, both `--node-netmask-size` and at least one `--secondary-subnets` value are required. The load balancer and block store CSI plugins are enabled by default.
 
-Use `--dry-run` to validate parameters without sending a create request.
+Use `--dry-run` to validate parameters without sending a create request. Dry-run performs local checks only — whether the `--k8s-version` is available on the selected `--release-channel`, that the VPC and subnets exist, and quota availability are validated by the server on the actual create.
 
 ## Synopsis
 
@@ -137,16 +137,18 @@ Availability-zone strategy for the cluster.
 
 **`--secondary-subnets`** (list&lt;string&gt;)
 
-Secondary subnet IDs, comma-separated.
+Secondary subnet IDs, comma-separated. Used by `CILIUM_NATIVE_ROUTING`.
 
-- Required: No
+- Required: Conditional — at least one value is required when `--network-type` is `CILIUM_NATIVE_ROUTING`.
+- Constraints: up to 10 entries.
 - Syntax: `sub-aaa,sub-bbb`
 
 **`--node-netmask-size`** (integer)
 
-Node netmask size. Only sent when explicitly provided.
+Node CIDR mask size used in `CILIUM_NATIVE_ROUTING` mode. Only sent when explicitly provided.
 
-- Required: No
+- Required: Conditional — required when `--network-type` is `CILIUM_NATIVE_ROUTING`.
+- Possible values: `24`, `25`, `26` (default `25`).
 
 **`--auto-upgrade-config`** (structure)
 
@@ -171,25 +173,25 @@ JSON syntax:
 
 **`--auto-healing-config`** (structure)
 
-Auto-healing configuration. Accepts shorthand or JSON.
+Auto-healing configuration. Accepts shorthand or JSON. When `enableAutoHealing` is `true`, set **exactly one** of `maxUnhealthy` or `unhealthyRange` — the API rejects both together.
 
 - Required: No
 - Members:
     - `enableAutoHealing` (boolean) — enable or disable auto-healing
-    - `maxUnhealthy` (string) — maximum unhealthy nodes, e.g. `20%`
-    - `unhealthyRange` (string) — unhealthy node count range, e.g. `[2-5]`
-    - `timeoutUnhealthy` (integer) — unhealthy timeout in seconds
+    - `maxUnhealthy` (string) — maximum unhealthy nodes, e.g. `20%` (mutually exclusive with `unhealthyRange`)
+    - `unhealthyRange` (string) — unhealthy node count range, e.g. `[2-5]` (mutually exclusive with `maxUnhealthy`)
+    - `timeoutUnhealthy` (integer) — minutes to wait before considering a node unhealthy (5–180)
 
 Shorthand syntax:
 
 ```
-enableAutoHealing=true,maxUnhealthy=20%,unhealthyRange=[2-5],timeoutUnhealthy=10
+enableAutoHealing=true,maxUnhealthy=20%,timeoutUnhealthy=10
 ```
 
 JSON syntax:
 
 ```json
-{"enableAutoHealing": true, "maxUnhealthy": "20%", "unhealthyRange": "[2-5]", "timeoutUnhealthy": 10}
+{"enableAutoHealing": true, "maxUnhealthy": "20%", "timeoutUnhealthy": 10}
 ```
 
 **`--dry-run`** (boolean)
@@ -213,7 +215,9 @@ grn vks create-cluster \
   --k8s-version v1.29.13-vks.1740045600 \
   --network-type CILIUM_NATIVE_ROUTING \
   --vpc-id net-abc12345-0000-0000-0000-000000000001 \
-  --subnet-id sub-abc12345-0000-0000-0000-000000000001
+  --subnet-id sub-abc12345-0000-0000-0000-000000000001 \
+  --node-netmask-size 25 \
+  --secondary-subnets sub-abc12345-0000-0000-0000-000000000002
 ```
 
 Create a cluster with TIGERA (CIDR required) and auto-healing:
@@ -237,5 +241,7 @@ grn vks create-cluster \
   --k8s-version v1.29.13-vks.1740045600 \
   --network-type CILIUM_NATIVE_ROUTING \
   --vpc-id net-abc12345-0000-0000-0000-000000000001 \
+  --node-netmask-size 25 \
+  --secondary-subnets sub-abc12345-0000-0000-0000-000000000002 \
   --dry-run
 ```

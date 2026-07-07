@@ -59,6 +59,11 @@ func runConfigAutoHealing(cmd *cobra.Command, args []string) error {
 		"unhealthy-range":   cmd.Flags().Changed("unhealthy-range"),
 		"timeout-unhealthy": cmd.Flags().Changed("timeout-unhealthy"),
 	}
+
+	// The API accepts at most one of maxUnhealthy / unhealthyRange.
+	if changed["max-unhealthy"] && changed["unhealthy-range"] {
+		return fmt.Errorf("set exactly one of --max-unhealthy or --unhealthy-range, not both")
+	}
 	body := buildAutoHealingBody(enable, maxUnhealthy, unhealthyRange, timeoutUnhealthy, changed)
 
 	if dryRun {

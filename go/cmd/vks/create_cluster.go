@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/vngcloud/greennode-cli/internal/cli"
@@ -22,7 +23,7 @@ func init() {
 	// Cluster settings (required)
 	f.String("name", "", "Cluster name (required)")
 	f.String("k8s-version", "", "Kubernetes version (required)")
-	f.String("network-type", "", "Network type: TIGERA, CILIUM_OVERLAY, CILIUM_NATIVE_ROUTING (required)")
+	f.String("network-type", "", "Network type: TIGERA, CILIUM_OVERLAY, CILIUM_NATIVE_ROUTING (required). TIGERA/CILIUM_OVERLAY need --cidr; CILIUM_NATIVE_ROUTING needs --node-netmask-size and --secondary-subnets")
 	f.String("vpc-id", "", "VPC ID (required)")
 	f.String("subnet-id", "", "Subnet ID")
 
@@ -39,11 +40,11 @@ func init() {
 	f.String("block-store-csi-plugin", "enabled", "Block store CSI plugin (enabled, disabled)")
 	f.String("service-endpoint", "disabled", "Service endpoint (enabled, disabled)")
 	f.String("az-strategy", "SINGLE", "Availability zone strategy")
-	f.String("secondary-subnets", "", "Secondary subnet IDs (comma-separated)")
+	f.String("secondary-subnets", "", "Secondary subnet IDs, comma-separated (required for CILIUM_NATIVE_ROUTING, at least one, max 10)")
 	f.String("list-subnet-ids", "", "Subnet IDs for the cluster (comma-separated)")
-	f.Int("node-netmask-size", 0, "Node netmask size")
+	f.Int("node-netmask-size", 0, "Node netmask size: 24, 25, or 26 (required for CILIUM_NATIVE_ROUTING)")
 	f.String("auto-upgrade-config", "", "Auto-upgrade config (shorthand time=03:00,weekdays=Mon or JSON; use JSON for multiple weekdays)")
-	f.String("auto-healing-config", "", "Auto-healing config (shorthand enableAutoHealing=true,maxUnhealthy=20%,unhealthyRange=[2-5],timeoutUnhealthy=10 or JSON)")
+	f.String("auto-healing-config", "", "Auto-healing config; set exactly one of maxUnhealthy or unhealthyRange (shorthand enableAutoHealing=true,maxUnhealthy=20%,timeoutUnhealthy=10 or JSON)")
 	f.Bool("dry-run", false, "Validate parameters without creating the cluster")
 }
 
@@ -131,11 +132,25 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("--auto-healing-config: %w", err)
 		}
+		if enabled, _ := hc["enableAutoHealing"].(bool); enabled {
+			_, hasMax := hc["maxUnhealthy"]
+			_, hasRange := hc["unhealthyRange"]
+			if hasMax == hasRange {
+				return fmt.Errorf("--auto-healing-config: set exactly one of maxUnhealthy or unhealthyRange")
+			}
+		}
 		body["autoHealingConfig"] = hc
 	}
 
+	// Network-type-specific requirements (enforced client-side so both dry-run
+	// and real creates fail fast with a clear message).
+	netErrs := validateNetworkRequirements(networkType, cidr, cmd.Flags().Changed("node-netmask-size"), secondarySubnets)
+
 	if dryRun {
-		return validateCreateCluster(name, networkType, cidr)
+		return validateCreateCluster(name, netErrs)
+	}
+	if len(netErrs) > 0 {
+		return fmt.Errorf("%s", strings.Join(netErrs, "; "))
 	}
 
 	apiClient, err := createClient(cmd)
@@ -152,7 +167,30 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	return outputResult(cmd, result)
 }
 
-func validateCreateCluster(name, networkType, cidr string) error {
+// validateNetworkRequirements checks the fields each network type requires.
+// The API mandates --cidr for TIGERA/CILIUM_OVERLAY and both
+// --node-netmask-size and at least one --secondary-subnets for
+// CILIUM_NATIVE_ROUTING; validating here turns opaque server errors into
+// actionable messages.
+func validateNetworkRequirements(networkType, cidr string, nodeNetmaskSet bool, secondarySubnets string) []string {
+	var errs []string
+	switch networkType {
+	case "TIGERA", "CILIUM_OVERLAY":
+		if cidr == "" {
+			errs = append(errs, fmt.Sprintf("--cidr is required when --network-type is %s", networkType))
+		}
+	case "CILIUM_NATIVE_ROUTING":
+		if !nodeNetmaskSet {
+			errs = append(errs, "--node-netmask-size is required when --network-type is CILIUM_NATIVE_ROUTING (allowed: 24, 25, 26)")
+		}
+		if secondarySubnets == "" {
+			errs = append(errs, "--secondary-subnets is required when --network-type is CILIUM_NATIVE_ROUTING (at least one subnet)")
+		}
+	}
+	return errs
+}
+
+func validateCreateCluster(name string, networkErrors []string) error {
 	clusterNameRE := regexp.MustCompile(`^[a-z0-9][a-z0-9\-]{3,18}[a-z0-9]$`)
 
 	var errors []string
@@ -162,9 +200,7 @@ func validateCreateCluster(name, networkType, cidr string) error {
 			"Cluster name '%s' is invalid. Must be 5-20 chars, lowercase alphanumeric and hyphens, start/end with alphanumeric.", name))
 	}
 
-	if (networkType == "TIGERA" || networkType == "CILIUM_OVERLAY") && cidr == "" {
-		errors = append(errors, fmt.Sprintf("--cidr is required when network-type is %s", networkType))
-	}
+	errors = append(errors, networkErrors...)
 
 	fmt.Println("=== DRY RUN: Validation results ===")
 	fmt.Println()
@@ -177,5 +213,9 @@ func validateCreateCluster(name, networkType, cidr string) error {
 	}
 
 	fmt.Println("All parameters are valid. Run without --dry-run to create the cluster.")
+	fmt.Println()
+	fmt.Println("Note: dry-run performs local checks only. Whether the --k8s-version is")
+	fmt.Println("available on the selected --release-channel, that the VPC/subnets exist,")
+	fmt.Println("and quota availability are validated by the server on the actual create.")
 	return nil
 }
