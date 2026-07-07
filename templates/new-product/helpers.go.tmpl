@@ -1,0 +1,25 @@
+package __PRODUCT__
+
+import (
+	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
+	"github.com/vngcloud/greennode-cli/internal/client"
+)
+
+// createClient builds a GreenodeClient for the __PRODUCT__ service from command
+// flags. "cli.NewClient" resolves the endpoint via config.GetEndpoint using the
+// service name, so add a "__PRODUCT___endpoint" entry to internal/config REGIONS.
+func createClient(cmd *cobra.Command) (*client.GreenodeClient, error) {
+	return cli.NewClient(cmd, "__PRODUCT__")
+}
+
+// outputResult formats and prints the API response using the shared --output /
+// --query handling.
+func outputResult(cmd *cobra.Command, data interface{}) error {
+	return cli.Output(cmd, data)
+}
+
+// parseCommaSeparated splits a comma-separated flag value into a trimmed slice.
+func parseCommaSeparated(s string) []string {
+	return cli.ParseCommaSeparated(s)
+}
