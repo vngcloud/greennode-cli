@@ -18,7 +18,7 @@ Fetching project_id from HCM-3...
 Auto-detected project_id: pro-xxxxxxxx
 ```
 
-`Project ID` is the VNG Cloud project UUID for the selected region (e.g.
+`Project ID` is the GreenNode project UUID for the selected region (e.g.
 `pro-e28d4501-...`). Leave blank and the wizard calls the vServer API with
 your credentials to detect and save it. Each user has one project per region,
 so the detection is unambiguous.
@@ -27,7 +27,7 @@ If auto-detect fails (network or auth error), the wizard prints a warning and
 leaves the field blank — downstream tools (such as the GreenNode MCP Server)
 can still auto-detect at first call.
 
-Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
+Credentials are obtained from the [GreenNode IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
 
 ## Credential resolution order
 
@@ -43,7 +43,7 @@ Credentials are resolved in the following order (highest to lowest priority):
 | `GRN_ACCESS_KEY_ID` | Client ID (overrides credentials file) |
 | `GRN_SECRET_ACCESS_KEY` | Client Secret (overrides credentials file) |
 | `GRN_DEFAULT_REGION` | Default region |
-| `GRN_DEFAULT_PROJECT_ID` | Project ID (VNG Cloud project UUID) |
+| `GRN_DEFAULT_PROJECT_ID` | Project ID (GreenNode project UUID) |
 | `GRN_PROFILE` | Profile name (default: "default") |
 | `GRN_DEFAULT_OUTPUT` | Output format |
 
