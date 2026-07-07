@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/vngcloud/greennode-cli/compare/v1.7.0...v1.7.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* **vks:** make update-cluster fields optional per spec ([#40](https://github.com/vngcloud/greennode-cli/issues/40)) ([9423eed](https://github.com/vngcloud/greennode-cli/commit/9423eed78aab1d3342cbd26ce672b744726cfacf))
+
 ## [1.7.0](https://github.com/vngcloud/greennode-cli/compare/v1.6.0...v1.7.0) (2026-07-07)
 
 
