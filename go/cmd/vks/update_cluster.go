@@ -17,33 +17,34 @@ var updateClusterCmd = &cobra.Command{
 func init() {
 	f := updateClusterCmd.Flags()
 	f.String("cluster-id", "", "Cluster ID (required)")
-	f.String("k8s-version", "", "Kubernetes version (required)")
-	f.String("whitelist-node-cidrs", "", "Whitelist CIDRs, comma-separated (required)")
+	f.String("k8s-version", "", "New Kubernetes version; unset = unchanged")
+	f.String("whitelist-node-cidrs", "", "Whitelist CIDRs, comma-separated; unset = unchanged")
 	f.String("load-balancer-plugin", "", "Load balancer plugin (enabled, disabled); unset = unchanged")
 	f.String("block-store-csi-plugin", "", "Block store CSI plugin (enabled, disabled); unset = unchanged")
 	f.Bool("dry-run", false, "Validate parameters without updating")
 
 	updateClusterCmd.MarkFlagRequired("cluster-id")
-	updateClusterCmd.MarkFlagRequired("k8s-version")
-	updateClusterCmd.MarkFlagRequired("whitelist-node-cidrs")
 }
 
 func runUpdateCluster(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
-	k8sVersion, _ := cmd.Flags().GetString("k8s-version")
-	whitelistCIDRs, _ := cmd.Flags().GetString("whitelist-node-cidrs")
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
 		return err
 	}
 
-	body := map[string]interface{}{
-		"version":            k8sVersion,
-		"whitelistNodeCIDRs": parseCommaSeparated(whitelistCIDRs),
-	}
+	// All body fields are optional (partial update) — send only what the user set.
+	body := map[string]any{}
 
-	// Plugin toggles are only sent when explicitly provided (unset = unchanged).
+	if cmd.Flags().Changed("k8s-version") {
+		v, _ := cmd.Flags().GetString("k8s-version")
+		body["version"] = v
+	}
+	if cmd.Flags().Changed("whitelist-node-cidrs") {
+		v, _ := cmd.Flags().GetString("whitelist-node-cidrs")
+		body["whitelistNodeCIDRs"] = parseCommaSeparated(v)
+	}
 	if cmd.Flags().Changed("load-balancer-plugin") {
 		v, _ := cmd.Flags().GetString("load-balancer-plugin")
 		enabled, err := parseToggle("load-balancer-plugin", v)
@@ -61,17 +62,16 @@ func runUpdateCluster(cmd *cobra.Command, args []string) error {
 		body["enabledBlockStoreCsiPlugin"] = enabled
 	}
 
+	if len(body) == 0 {
+		return fmt.Errorf("nothing to update: provide at least one of --k8s-version, --whitelist-node-cidrs, --load-balancer-plugin, or --block-store-csi-plugin")
+	}
+
 	if dryRun {
 		fmt.Println("=== DRY RUN: Update cluster ===")
 		fmt.Println()
 		fmt.Printf("Cluster ID: %s\n", clusterID)
-		fmt.Printf("New version: %s\n", k8sVersion)
-		fmt.Printf("Whitelist CIDRs: %s\n", whitelistCIDRs)
-		if v, ok := body["enabledLoadBalancerPlugin"]; ok {
-			fmt.Printf("Load balancer plugin: %v\n", v)
-		}
-		if v, ok := body["enabledBlockStoreCsiPlugin"]; ok {
-			fmt.Printf("Block store CSI plugin: %v\n", v)
+		for key, value := range body {
+			fmt.Printf("  %s: %v\n", key, value)
 		}
 		fmt.Println("\nRun without --dry-run to update.")
 		return nil
