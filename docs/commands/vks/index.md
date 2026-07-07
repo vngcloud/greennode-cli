@@ -1,6 +1,6 @@
 # VKS Commands
 
-VKS (VNG Kubernetes Service) commands for managing Kubernetes clusters and node groups.
+VKS (GreenNode Kubernetes Service) commands for managing Kubernetes clusters and node groups.
 
 ```bash
 grn vks <command> [options]

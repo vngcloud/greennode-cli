@@ -87,7 +87,7 @@ output = json
 project_id = pro-xxxxxxxx
 ```
 
-Credentials are obtained from the [VNG Cloud IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
+Credentials are obtained from the [GreenNode IAM Portal](https://hcm-3.console.vngcloud.vn/iam/) under Service Accounts.
 
 Credential resolution order: environment variables take priority over the credentials file.
 
@@ -194,7 +194,7 @@ The best way to interact with our team is through GitHub:
 - [Documentation](https://vngcloud.github.io/greenode-cli/)
 - [Changelog](CHANGELOG.md)
 - [Contributing Guide](CONTRIBUTING.md)
-- [VNG Cloud Console](https://hcm-3.console.vngcloud.vn/)
+- [GreenNode Console](https://hcm-3.console.vngcloud.vn/)
 
 ## License
 

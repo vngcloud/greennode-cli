@@ -2,7 +2,7 @@
 
 ## Project overview
 
-GreenNode CLI (`grn`) is a unified command-line tool for managing GreenNode (VNG Cloud) services. Written in Go, distributed as a single binary. VKS (VNG Kubernetes Service) is the first service; other product teams add their own services.
+GreenNode CLI (`grn`) is a unified command-line tool for managing GreenNode services. Written in Go, distributed as a single binary. VKS (GreenNode Kubernetes Service) is the first service; other product teams add their own services.
 
 - **Repo**: `vngcloud/greennode-cli`
 - **Docs**: https://vngcloud.github.io/greennode-cli/
@@ -78,7 +78,7 @@ go/
 - Commands in `cmd/` following cobra patterns
 - Use `cobra.Command` with `RunE` for error handling
 
-## VNG Cloud API quirks
+## GreenNode API quirks
 
 - **IAM API uses camelCase**: `grantType`, `accessToken`, `expiresIn`
 - **VKS API pagination is 0-based**: page 0 = first page
