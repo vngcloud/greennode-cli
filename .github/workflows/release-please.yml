@@ -1,0 +1,40 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+      tag_name: ${{ steps.rp.outputs.tag_name }}
+    steps:
+      # Optional fine-grained PAT (contents: write, pull-requests: write). With a
+      # PAT the release PR's required checks start automatically; with the default
+      # GITHUB_TOKEN you must close & reopen the release PR once to kick checks.
+      - uses: googleapis/release-please-action@v4
+        id: rp
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # When release-please cuts a release (release PR merged), build the binaries and
+  # attach them to the just-created GitHub Release. Done in-run so we don't depend
+  # on the release tag triggering the tag-push workflow (GITHUB_TOKEN-created tags
+  # do not trigger push workflows).
+  build-release:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.release-please.outputs.tag_name }}
+    permissions:
+      contents: write
+    secrets: inherit
