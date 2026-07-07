@@ -59,7 +59,7 @@ nav:
     - Versions:
       - list-cluster-versions: commands/vks/list-cluster-versions.md
     - Auto-Upgrade:
-      - set-auto-upgrade-config: commands/vks/set-auto-upgrade-config.md
+      - config-auto-upgrade: commands/vks/config-auto-upgrade.md
       - delete-auto-upgrade-config: commands/vks/delete-auto-upgrade-config.md
     - Auto-Healing:
       - config-auto-healing: commands/vks/config-auto-healing.md
@@ -72,21 +72,8 @@ nav:
       - get-quota: commands/vks/get-quota.md
     - Waiter:
       - wait: commands/vks/wait.md
-  - vServer Commands:
-    - Overview: commands/vserver/index.md
-    - Server:
-      - server: commands/vserver/server.md
-    - Networking:
-      - vpc: commands/vserver/vpc.md
-      - subnet: commands/vserver/subnet.md
-    - Storage:
-      - volume: commands/vserver/volume.md
-      - volume-type: commands/vserver/volume-type.md
-    - Security:
-      - secgroup: commands/vserver/secgroup.md
-    - Discovery:
-      - flavor: commands/vserver/flavor.md
-      - image: commands/vserver/image.md
+  # vServer Commands are omitted from the published nav until vServer is released.
+  # The pages under docs/commands/vserver/ remain for development reference.
   - Development:
     - Contributing: development/contributing.md
     - Architecture & Adding a Service: development/architecture.md

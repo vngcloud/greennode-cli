@@ -58,7 +58,9 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: '0'
-        run: go build -o grn-${{ matrix.suffix }} .
+        # Public release binaries ship VKS only; vServer is excluded via the
+        # vks_only build tag until it is ready to release.
+        run: go build -tags vks_only -o grn-${{ matrix.suffix }} .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
