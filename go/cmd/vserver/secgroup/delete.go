@@ -46,9 +46,12 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to fetch security group %s: %w", secgroupID, err)
 	}
 
-	if err := printSecgroupDeletePreview(response); err != nil {
-		return err
+	sgData, ok := response.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected response type from API: %T", response)
 	}
+
+	printSecgroupDeletePreview(sgData)
 
 	if !force {
 		fmt.Print("\nAre you sure you want to delete this security group? [y/N]: ")
@@ -69,17 +72,12 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	return outputResult(cmd, cfg, result)
 }
 
-func printSecgroupDeletePreview(sg interface{}) error {
-	s, ok := sg.(map[string]interface{})
-	if !ok || s == nil {
-		return fmt.Errorf("could not parse security group details from API response (type: %T)", sg)
-	}
+func printSecgroupDeletePreview(sg map[string]interface{}) {
 	fmt.Println("The following security group will be deleted:")
 	fmt.Println()
-	fmt.Printf("  ID:          %v\n", s["id"])
-	fmt.Printf("  Name:        %v\n", s["name"])
-	fmt.Printf("  Description: %v\n", s["description"])
+	fmt.Printf("  ID:          %v\n", sg["id"])
+	fmt.Printf("  Name:        %v\n", sg["name"])
+	fmt.Printf("  Description: %v\n", sg["description"])
 	fmt.Println()
 	fmt.Println("This action is irreversible.")
-	return nil
 }

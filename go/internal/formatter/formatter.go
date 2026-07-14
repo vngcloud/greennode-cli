@@ -7,9 +7,35 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/jmespath/go-jmespath"
 )
+
+// Truncate shortens s to at most max runes, appending "…" if truncation occurred.
+func Truncate(s string, max int) string {
+	runes := []rune(s)
+	if len(runes) <= max {
+		return s
+	}
+	return string(runes[:max]) + "…"
+}
+
+// ShortDate reformats an ISO-8601 / RFC3339 timestamp string to "2006-01-02".
+// If the value cannot be parsed it is returned unchanged.
+func ShortDate(s string) string {
+	for _, layout := range []string{
+		time.RFC3339Nano,
+		time.RFC3339,
+		"2006-01-02T15:04:05",
+		"2006-01-02T15:04:05Z",
+	} {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t.Format("2006-01-02")
+		}
+	}
+	return s
+}
 
 // knownListKeys are the wrapper keys list responses use for their item slice.
 // Checking these by name (instead of "first array field found") prevents a

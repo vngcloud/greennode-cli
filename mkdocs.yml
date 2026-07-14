@@ -80,11 +80,18 @@ nav:
     - Networking:
       - vpc: commands/vserver/vpc.md
       - subnet: commands/vserver/subnet.md
+      - floating-ip: commands/vserver/floating-ip.md
+      - network-interface: commands/vserver/network-interface.md
+      - dhcp: commands/vserver/dhcp.md
     - Storage:
       - volume: commands/vserver/volume.md
       - volume-type: commands/vserver/volume-type.md
     - Security:
       - secgroup: commands/vserver/secgroup.md
+      - sshkey: commands/vserver/sshkey.md
+    - Compute:
+      - placement-group: commands/vserver/placement-group.md
+      - user-image: commands/vserver/user-image.md
     - Discovery:
       - flavor: commands/vserver/flavor.md
       - image: commands/vserver/image.md
