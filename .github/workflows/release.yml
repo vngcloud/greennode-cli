@@ -12,6 +12,12 @@ on:
       version:
         description: 'Version to release (e.g. 0.2.0)'
         required: true
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Release tag to build and attach binaries to (e.g. v1.7.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -52,7 +58,9 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: '0'
-        run: go build -o grn-${{ matrix.suffix }} .
+        # Public release binaries ship VKS only; vServer is excluded via the
+        # vks_only build tag until it is ready to release.
+        run: go build -tags vks_only -o grn-${{ matrix.suffix }} .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -70,9 +78,18 @@ jobs:
           path: dist/
           merge-multiple: true
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          generate_release_notes: true
-          files: dist/grn-*
+      - name: Attach binaries to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # tag comes from the workflow_call input; otherwise the pushed tag ref.
+          TAG: ${{ inputs.tag || github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            # Release already exists (e.g. created by release-please) — attach binaries.
+            gh release upload "$TAG" dist/grn-* --clobber --repo "$REPO"
+          else
+            # Manual tag push / dispatch — create the release with generated notes.
+            gh release create "$TAG" dist/grn-* --generate-notes --repo "$REPO"
+          fi

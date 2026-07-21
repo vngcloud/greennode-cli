@@ -28,33 +28,36 @@ func runSet(cmd *cobra.Command, args []string) {
 
 	writer := config.NewConfigFileWriter()
 
+	// Load existing config so unrelated fields are preserved on write. For a
+	// brand-new profile LoadConfig returns (nil, err); fall back to empty
+	// defaults so the value can still be set instead of panicking.
+	cfg, err := config.LoadConfig(profile)
+	if err != nil || cfg == nil {
+		cfg = &config.Config{}
+	}
+
 	switch key {
 	case "client_id":
-		cfg, _ := config.LoadConfig(profile)
 		if err := writer.WriteCredentials(profile, value, cfg.ClientSecret); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	case "client_secret":
-		cfg, _ := config.LoadConfig(profile)
 		if err := writer.WriteCredentials(profile, cfg.ClientID, value); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	case "region":
-		cfg, _ := config.LoadConfig(profile)
 		if err := writer.WriteConfig(profile, value, cfg.Output, cfg.ProjectID); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	case "output":
-		cfg, _ := config.LoadConfig(profile)
 		if err := writer.WriteConfig(profile, cfg.Region, value, cfg.ProjectID); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	case "project_id":
-		cfg, _ := config.LoadConfig(profile)
 		if err := writer.WriteConfig(profile, cfg.Region, cfg.Output, value); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
@@ -64,5 +67,17 @@ func runSet(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Set '%s' to '%s' for profile '%s'.\n", key, value, profile)
+	fmt.Printf("Set '%s' to '%s' for profile '%s'.\n", key, displaySetValue(key, value), profile)
+}
+
+// displaySetValue masks credential values so `configure set` never echoes a
+// secret in plaintext (matching how `configure list` masks them). Non-sensitive
+// values are shown as-is.
+func displaySetValue(key, value string) string {
+	switch key {
+	case "client_id", "client_secret":
+		return config.MaskCredential(value)
+	default:
+		return value
+	}
 }

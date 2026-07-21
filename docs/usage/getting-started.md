@@ -40,7 +40,7 @@ grn vks create-cluster \
   --cidr 192.168.0.0/16 \
   --node-group-name default \
   --flavor-id flav-xxxxx \
-  --image-id img-xxxxx \
+  --os ubuntu \
   --disk-type vtype-xxxxx \
   --ssh-key-id ssh-xxxxx
 

@@ -2,9 +2,9 @@
 
 ## Description
 
-Delete a VKS cluster and all of its associated node groups. Before executing the delete, the command always fetches and displays a preview of the cluster and node groups that will be removed.
+Delete a VKS cluster and all of its associated node groups. Before executing, the command fetches and displays a preview showing the cluster name, status, version, node count, and the list of node groups that will be removed.
 
-Unless `--force` is provided, you will be prompted to type `yes` to confirm. Use `--dry-run` to see the preview without being prompted and without deleting anything.
+Unless `--force` is provided, you are prompted to confirm. Use `--dry-run` to see the preview without being prompted and without deleting anything.
 
 **This action is irreversible.**
 
@@ -19,14 +19,29 @@ grn vks delete-cluster
 
 ## Options
 
-`--cluster-id` (required)
-: ID of the cluster to delete.
+**`--cluster-id`** (string)
 
-`--dry-run` (optional)
-: Display the resources that would be deleted without executing the delete request.
+ID of the cluster to delete.
 
-`--force` (optional)
-: Skip the interactive confirmation prompt and delete immediately.
+- Required: Yes
+
+**`--dry-run`** (boolean)
+
+Display the resources that would be deleted without sending the delete request.
+
+- Required: No
+- Default: `false`
+
+**`--force`** (boolean)
+
+Skip the interactive confirmation prompt and delete immediately. Useful in non-interactive scripts.
+
+- Required: No
+- Default: `false`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 

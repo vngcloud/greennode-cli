@@ -1,12 +1,10 @@
 package subnet
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -21,6 +19,7 @@ func init() {
 	f.String("subnet-id", "", "Subnet ID (required)")
 	f.String("vpc-id", "", "VPC (network) ID the subnet belongs to (required)")
 	f.Bool("force", false, "Skip confirmation prompt")
+	f.Bool("dry-run", false, "Preview the subnet deletion without executing")
 	deleteCmd.MarkFlagRequired("subnet-id")
 	deleteCmd.MarkFlagRequired("vpc-id")
 }
@@ -29,6 +28,7 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	subnetID, _ := cmd.Flags().GetString("subnet-id")
 	vpcID, _ := cmd.Flags().GetString("vpc-id")
 	force, _ := cmd.Flags().GetBool("force")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(subnetID, "subnet-id"); err != nil {
 		return err
@@ -61,15 +61,13 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if !force {
-		fmt.Print("\nAre you sure you want to delete this subnet? [y/N]: ")
-		reader := bufio.NewReader(os.Stdin)
-		answer, _ := reader.ReadString('\n')
-		answer = strings.TrimSpace(strings.ToLower(answer))
-		if answer != "y" && answer != "yes" {
-			fmt.Println("Aborted.")
-			return nil
-		}
+	if dryRun {
+		cli.DryRunNotice("delete")
+		return nil
+	}
+	if !cli.Confirm(force, "Are you sure you want to delete this subnet?") {
+		fmt.Println("Aborted.")
+		return nil
 	}
 
 	result, err := apiClient.Delete(fmt.Sprintf("/v2/%s/networks/%s/subnets/%s", projectID, vpcID, subnetID), nil)

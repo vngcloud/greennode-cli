@@ -11,7 +11,7 @@ grn vks create-nodegroup --dry-run --cluster-id k8s-xxxxx --name workers ...
 
 # Preview update parameters
 grn vks update-cluster --dry-run --cluster-id k8s-xxxxx --k8s-version v1.31 --whitelist-node-cidrs 0.0.0.0/0
-grn vks update-nodegroup --dry-run --cluster-id k8s-xxxxx --nodegroup-id ng-xxxxx --image-id img-xxxxx
+grn vks update-nodegroup --dry-run --cluster-id k8s-xxxxx --nodegroup-id ng-xxxxx --num-nodes 3
 
 # Preview what will be deleted
 grn vks delete-cluster --dry-run --cluster-id k8s-xxxxx
@@ -25,7 +25,7 @@ Validates parameters offline:
 - Cluster/nodegroup name format
 - Disk size range (20-5000 GiB)
 - Number of nodes range (0-10)
-- CIDR requirement for CALICO/CILIUM_OVERLAY networks
+- CIDR requirement for TIGERA/CILIUM_OVERLAY networks
 
 ### Delete dry-run
 

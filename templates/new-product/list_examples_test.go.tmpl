@@ -1,0 +1,17 @@
+package __PRODUCT__
+
+import "testing"
+
+// TestExampleCommandRegistered is a starter test. Replace/extend it with real
+// tests for your commands (table-driven; use httptest for API calls).
+func TestExampleCommandRegistered(t *testing.T) {
+	found := false
+	for _, c := range __TITLE__Cmd.Commands() {
+		if c.Use == "list-examples" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("list-examples not registered under __PRODUCT__")
+	}
+}

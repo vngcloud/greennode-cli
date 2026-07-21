@@ -2,7 +2,7 @@
 
 ## Description
 
-List all VKS clusters. By default, automatically paginates through all pages and returns the complete result set. Use `--page` to fetch a specific page, or `--no-paginate` to return only the first page.
+List all VKS clusters. By default, auto-pagination is enabled and the command fetches all pages, returning the complete result set. Pass `--page` to retrieve a single specific page, or `--no-paginate` to return only page 0 without fetching further pages.
 
 ## Synopsis
 
@@ -15,14 +15,29 @@ grn vks list-clusters
 
 ## Options
 
-`--page` (optional)
-: Specific page number to fetch (0-based index). When provided, disables auto-pagination and returns only that page.
+**`--page`** (integer)
 
-`--page-size` (optional)
-: Number of items per page. Default: `50`.
+Page number to retrieve (0-based). When provided, disables auto-pagination and returns only the requested page.
 
-`--no-paginate` (optional)
-: Disable auto-pagination and return only the first page (page 0). Equivalent to `--page 0`.
+- Required: No
+
+**`--page-size`** (integer)
+
+Number of clusters to return per page.
+
+- Required: No
+- Default: `50`
+
+**`--no-paginate`** (boolean)
+
+Disable auto-pagination and return only page 0. Equivalent to `--page 0`.
+
+- Required: No
+- Default: `false`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 
@@ -32,7 +47,7 @@ List all clusters (auto-paginated):
 grn vks list-clusters
 ```
 
-List clusters with custom page size:
+List clusters with a custom page size:
 
 ```bash
 grn vks list-clusters --page-size 20

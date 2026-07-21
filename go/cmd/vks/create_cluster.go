@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 )
 
 var createClusterCmd = &cobra.Command{
 	Use:   "create-cluster",
 	Short: "Create a new VKS cluster",
-	RunE:  runCreateCluster,
+	Long: "Create a new VKS cluster (control plane only). " +
+		"Add worker nodes afterwards with 'grn vks create-nodegroup'.",
+	RunE: runCreateCluster,
 }
 
 func init() {
@@ -20,35 +23,28 @@ func init() {
 	// Cluster settings (required)
 	f.String("name", "", "Cluster name (required)")
 	f.String("k8s-version", "", "Kubernetes version (required)")
-	f.String("network-type", "", "Network type: CALICO, CILIUM_OVERLAY, CILIUM_NATIVE_ROUTING (required)")
+	f.String("network-type", "", "Network type: TIGERA, CILIUM_OVERLAY, CILIUM_NATIVE_ROUTING (required). TIGERA/CILIUM_OVERLAY need --cidr; CILIUM_NATIVE_ROUTING needs --node-netmask-size and --secondary-subnets")
 	f.String("vpc-id", "", "VPC ID (required)")
-	f.String("subnet-id", "", "Subnet ID (required)")
-	// Node group settings (required)
-	f.String("node-group-name", "", "Default node group name (required)")
-	f.String("flavor-id", "", "Flavor ID for node group (required)")
-	f.String("image-id", "", "Image ID for node group (required)")
-	f.String("disk-type", "", "Disk type ID (required)")
-	f.String("ssh-key-id", "", "SSH key ID for node group (required)")
+	f.String("subnet-id", "", "Subnet ID")
 
-	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id", "subnet-id", "node-group-name", "flavor-id", "image-id", "disk-type", "ssh-key-id"} {
+	for _, name := range []string{"name", "k8s-version", "network-type", "vpc-id"} {
 		createClusterCmd.MarkFlagRequired(name)
 	}
 
 	// Cluster settings (optional)
-	f.String("cidr", "", "CIDR block (required for CALICO and CILIUM_OVERLAY)")
+	f.String("cidr", "", "CIDR block (required for TIGERA and CILIUM_OVERLAY)")
 	f.String("description", "", "Cluster description")
-	f.Bool("enable-private-cluster", false, "Enable private cluster")
+	f.String("private-cluster", "disabled", "Private cluster (enabled, disabled)")
 	f.String("release-channel", "STABLE", "Release channel (RAPID, STABLE)")
-	f.Bool("no-load-balancer-plugin", false, "Disable load balancer plugin")
-	f.Bool("no-block-store-csi-plugin", false, "Disable block store CSI plugin")
-
-	// Node group settings (optional)
-	f.Int("disk-size", 100, "Disk size in GiB (20-5000)")
-	f.Int("num-nodes", 1, "Number of nodes (0-10)")
-	f.Bool("enable-private-nodes", false, "Enable private nodes")
-	f.String("security-groups", "", "Security group IDs (comma-separated)")
-	f.String("labels", "", "Node labels as key=value pairs (comma-separated)")
-	f.String("taints", "", "Node taints as key=value:effect (comma-separated)")
+	f.String("load-balancer-plugin", "enabled", "Load balancer plugin (enabled, disabled)")
+	f.String("block-store-csi-plugin", "enabled", "Block store CSI plugin (enabled, disabled)")
+	f.String("service-endpoint", "disabled", "Service endpoint (enabled, disabled)")
+	f.String("az-strategy", "SINGLE", "Availability zone strategy")
+	f.String("secondary-subnets", "", "Secondary subnet IDs, comma-separated (required for CILIUM_NATIVE_ROUTING, at least one, max 10)")
+	f.String("list-subnet-ids", "", "Subnet IDs for the cluster (comma-separated)")
+	f.Int("node-netmask-size", 0, "Node netmask size: 24, 25, or 26 (required for CILIUM_NATIVE_ROUTING)")
+	f.String("auto-upgrade-config", "", "Auto-upgrade config (shorthand time=03:00,weekdays=Mon or JSON; use JSON for multiple weekdays)")
+	f.String("auto-healing-config", "", "Auto-healing config; set exactly one of maxUnhealthy or unhealthyRange (shorthand enableAutoHealing=true,maxUnhealthy=20%,timeoutUnhealthy=10 or JSON)")
 	f.Bool("dry-run", false, "Validate parameters without creating the cluster")
 }
 
@@ -60,78 +56,101 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	subnetID, _ := cmd.Flags().GetString("subnet-id")
 	cidr, _ := cmd.Flags().GetString("cidr")
 	description, _ := cmd.Flags().GetString("description")
-	enablePrivateCluster, _ := cmd.Flags().GetBool("enable-private-cluster")
 	releaseChannel, _ := cmd.Flags().GetString("release-channel")
-	noLBPlugin, _ := cmd.Flags().GetBool("no-load-balancer-plugin")
-	noCSIPlugin, _ := cmd.Flags().GetBool("no-block-store-csi-plugin")
-
-	ngName, _ := cmd.Flags().GetString("node-group-name")
-	flavorID, _ := cmd.Flags().GetString("flavor-id")
-	imageID, _ := cmd.Flags().GetString("image-id")
-	diskType, _ := cmd.Flags().GetString("disk-type")
-	sshKeyID, _ := cmd.Flags().GetString("ssh-key-id")
-	diskSize, _ := cmd.Flags().GetInt("disk-size")
-	numNodes, _ := cmd.Flags().GetInt("num-nodes")
-	enablePrivateNodes, _ := cmd.Flags().GetBool("enable-private-nodes")
-	securityGroups, _ := cmd.Flags().GetString("security-groups")
-	labels, _ := cmd.Flags().GetString("labels")
-	taints, _ := cmd.Flags().GetString("taints")
+	azStrategy, _ := cmd.Flags().GetString("az-strategy")
+	secondarySubnets, _ := cmd.Flags().GetString("secondary-subnets")
+	listSubnetIDs, _ := cmd.Flags().GetString("list-subnet-ids")
+	autoUpgradeStr, _ := cmd.Flags().GetString("auto-upgrade-config")
+	autoHealingStr, _ := cmd.Flags().GetString("auto-healing-config")
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
-	// Build node group
-	nodeGroup := map[string]interface{}{
-		"name":               ngName,
-		"flavorId":           flavorID,
-		"imageId":            imageID,
-		"diskSize":           diskSize,
-		"diskType":           diskType,
-		"numNodes":           numNodes,
-		"enablePrivateNodes": enablePrivateNodes,
-		"sshKeyId":           sshKeyID,
-		"upgradeConfig": map[string]interface{}{
-			"maxSurge":       1,
-			"maxUnavailable": 0,
-			"strategy":       "SURGE",
-		},
-		"subnetId":       subnetID,
-		"securityGroups": []string{},
+	// Parse enabled/disabled toggle flags.
+	privateClusterVal, _ := cmd.Flags().GetString("private-cluster")
+	lbPluginVal, _ := cmd.Flags().GetString("load-balancer-plugin")
+	csiPluginVal, _ := cmd.Flags().GetString("block-store-csi-plugin")
+	serviceEndpointVal, _ := cmd.Flags().GetString("service-endpoint")
+	enablePrivateCluster, err := parseToggle("private-cluster", privateClusterVal)
+	if err != nil {
+		return err
+	}
+	enabledLBPlugin, err := parseToggle("load-balancer-plugin", lbPluginVal)
+	if err != nil {
+		return err
+	}
+	enabledCSIPlugin, err := parseToggle("block-store-csi-plugin", csiPluginVal)
+	if err != nil {
+		return err
+	}
+	enabledServiceEndpoint, err := parseToggle("service-endpoint", serviceEndpointVal)
+	if err != nil {
+		return err
 	}
 
-	if securityGroups != "" {
-		nodeGroup["securityGroups"] = parseCommaSeparated(securityGroups)
-	}
-	if labels != "" {
-		nodeGroup["labels"] = parseLabels(labels)
-	}
-	if taints != "" {
-		nodeGroup["taints"] = parseTaints(taints)
-	}
-
-	// Build cluster body
+	// Build cluster body. Node groups are created separately via
+	// 'grn vks create-nodegroup'.
 	body := map[string]interface{}{
 		"name":                       name,
 		"version":                    k8sVersion,
 		"networkType":                networkType,
 		"vpcId":                      vpcID,
-		"subnetId":                   subnetID,
 		"enablePrivateCluster":       enablePrivateCluster,
 		"releaseChannel":             releaseChannel,
-		"enabledBlockStoreCsiPlugin": !noCSIPlugin,
-		"enabledLoadBalancerPlugin":  !noLBPlugin,
-		"enabledServiceEndpoint":     false,
-		"azStrategy":                 "SINGLE",
-		"nodeGroups":                 []interface{}{nodeGroup},
+		"enabledBlockStoreCsiPlugin": enabledCSIPlugin,
+		"enabledLoadBalancerPlugin":  enabledLBPlugin,
+		"enabledServiceEndpoint":     enabledServiceEndpoint,
+		"azStrategy":                 azStrategy,
 	}
 
+	if subnetID != "" {
+		body["subnetId"] = subnetID
+	}
 	if cidr != "" {
 		body["cidr"] = cidr
 	}
 	if description != "" {
 		body["description"] = description
 	}
+	if secondarySubnets != "" {
+		body["secondarySubnets"] = parseCommaSeparated(secondarySubnets)
+	}
+	if listSubnetIDs != "" {
+		body["listSubnetIds"] = parseCommaSeparated(listSubnetIDs)
+	}
+	if cmd.Flags().Changed("node-netmask-size") {
+		nodeNetmaskSize, _ := cmd.Flags().GetInt("node-netmask-size")
+		body["nodeNetmaskSize"] = nodeNetmaskSize
+	}
+	if autoUpgradeStr != "" {
+		uc, err := cli.ParseStructFlag(autoUpgradeStr)
+		if err != nil {
+			return fmt.Errorf("--auto-upgrade-config: %w", err)
+		}
+		body["autoUpgradeConfig"] = uc
+	}
+	if autoHealingStr != "" {
+		hc, err := cli.ParseStructFlagTyped(autoHealingStr, []string{"timeoutUnhealthy"}, []string{"enableAutoHealing"})
+		if err != nil {
+			return fmt.Errorf("--auto-healing-config: %w", err)
+		}
+		if enabled, _ := hc["enableAutoHealing"].(bool); enabled {
+			_, hasMax := hc["maxUnhealthy"]
+			_, hasRange := hc["unhealthyRange"]
+			if hasMax == hasRange {
+				return fmt.Errorf("--auto-healing-config: set exactly one of maxUnhealthy or unhealthyRange")
+			}
+		}
+		body["autoHealingConfig"] = hc
+	}
+
+	// Network-type-specific requirements (enforced client-side so both dry-run
+	// and real creates fail fast with a clear message).
+	netErrs := validateNetworkRequirements(networkType, cidr, cmd.Flags().Changed("node-netmask-size"), secondarySubnets)
 
 	if dryRun {
-		return validateCreateCluster(name, ngName, networkType, cidr, diskSize, numNodes)
+		return validateCreateCluster(name, netErrs)
+	}
+	if len(netErrs) > 0 {
+		return fmt.Errorf("%s", strings.Join(netErrs, "; "))
 	}
 
 	apiClient, err := createClient(cmd)
@@ -148,9 +167,31 @@ func runCreateCluster(cmd *cobra.Command, args []string) error {
 	return outputResult(cmd, result)
 }
 
-func validateCreateCluster(name, ngName, networkType, cidr string, diskSize, numNodes int) error {
+// validateNetworkRequirements checks the fields each network type requires.
+// The API mandates --cidr for TIGERA/CILIUM_OVERLAY and both
+// --node-netmask-size and at least one --secondary-subnets for
+// CILIUM_NATIVE_ROUTING; validating here turns opaque server errors into
+// actionable messages.
+func validateNetworkRequirements(networkType, cidr string, nodeNetmaskSet bool, secondarySubnets string) []string {
+	var errs []string
+	switch networkType {
+	case "TIGERA", "CILIUM_OVERLAY":
+		if cidr == "" {
+			errs = append(errs, fmt.Sprintf("--cidr is required when --network-type is %s", networkType))
+		}
+	case "CILIUM_NATIVE_ROUTING":
+		if !nodeNetmaskSet {
+			errs = append(errs, "--node-netmask-size is required when --network-type is CILIUM_NATIVE_ROUTING (allowed: 24, 25, 26)")
+		}
+		if secondarySubnets == "" {
+			errs = append(errs, "--secondary-subnets is required when --network-type is CILIUM_NATIVE_ROUTING (at least one subnet)")
+		}
+	}
+	return errs
+}
+
+func validateCreateCluster(name string, networkErrors []string) error {
 	clusterNameRE := regexp.MustCompile(`^[a-z0-9][a-z0-9\-]{3,18}[a-z0-9]$`)
-	ngNameRE := regexp.MustCompile(`^[a-z0-9][a-z0-9-]{3,13}[a-z0-9]$`)
 
 	var errors []string
 
@@ -159,22 +200,7 @@ func validateCreateCluster(name, ngName, networkType, cidr string, diskSize, num
 			"Cluster name '%s' is invalid. Must be 5-20 chars, lowercase alphanumeric and hyphens, start/end with alphanumeric.", name))
 	}
 
-	if (networkType == "CALICO" || networkType == "CILIUM_OVERLAY") && cidr == "" {
-		errors = append(errors, fmt.Sprintf("--cidr is required when network-type is %s", networkType))
-	}
-
-	if !ngNameRE.MatchString(ngName) {
-		errors = append(errors, fmt.Sprintf(
-			"Node group name '%s' is invalid. Must be 5-15 chars, lowercase alphanumeric and hyphens, start/end with alphanumeric.", ngName))
-	}
-
-	if diskSize < 20 || diskSize > 5000 {
-		errors = append(errors, fmt.Sprintf("Disk size %s out of range (20-5000 GiB)", strconv.Itoa(diskSize)))
-	}
-
-	if numNodes < 0 || numNodes > 10 {
-		errors = append(errors, fmt.Sprintf("Number of nodes %s out of range (0-10)", strconv.Itoa(numNodes)))
-	}
+	errors = append(errors, networkErrors...)
 
 	fmt.Println("=== DRY RUN: Validation results ===")
 	fmt.Println()
@@ -187,5 +213,9 @@ func validateCreateCluster(name, ngName, networkType, cidr string, diskSize, num
 	}
 
 	fmt.Println("All parameters are valid. Run without --dry-run to create the cluster.")
+	fmt.Println()
+	fmt.Println("Note: dry-run performs local checks only. Whether the --k8s-version is")
+	fmt.Println("available on the selected --release-channel, that the VPC/subnets exist,")
+	fmt.Println("and quota availability are validated by the server on the actual create.")
 	return nil
 }

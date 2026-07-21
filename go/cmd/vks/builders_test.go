@@ -32,6 +32,33 @@ func TestBuildAutoHealingBodyOnlyChangedOptionalFields(t *testing.T) {
 	}
 }
 
+func TestValidateNetworkRequirements(t *testing.T) {
+	cases := []struct {
+		name           string
+		networkType    string
+		cidr           string
+		nodeNetmaskSet bool
+		secondary      string
+		wantErrs       int
+	}{
+		{"overlay needs cidr", "CILIUM_OVERLAY", "", false, "", 1},
+		{"overlay with cidr ok", "CILIUM_OVERLAY", "10.0.0.0/16", false, "", 0},
+		{"tigera needs cidr", "TIGERA", "", false, "", 1},
+		{"native routing needs both", "CILIUM_NATIVE_ROUTING", "", false, "", 2},
+		{"native routing missing netmask", "CILIUM_NATIVE_ROUTING", "", false, "sub-1", 1},
+		{"native routing missing secondary", "CILIUM_NATIVE_ROUTING", "", true, "", 1},
+		{"native routing complete", "CILIUM_NATIVE_ROUTING", "", true, "sub-1", 0},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			errs := validateNetworkRequirements(tc.networkType, tc.cidr, tc.nodeNetmaskSet, tc.secondary)
+			if len(errs) != tc.wantErrs {
+				t.Errorf("got %d errors %v, want %d", len(errs), errs, tc.wantErrs)
+			}
+		})
+	}
+}
+
 func TestBuildMetadataBodyIncludesOnlyChangedKeys(t *testing.T) {
 	got := buildMetadataBody("env=prod", "", "dedicated=gpu:NoSchedule", map[string]bool{
 		"labels": true, "tags": false, "taints": true,

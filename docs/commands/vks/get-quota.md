@@ -2,7 +2,7 @@
 
 ## Description
 
-Get VKS quota limits and current usage for the current user, including maximum number of clusters, node groups per cluster, nodes per node group, and current cluster count.
+Get VKS quota limits and current usage for the authenticated user, including the maximum number of clusters, node groups per cluster, nodes per node group, and the current cluster count.
 
 ## Synopsis
 
@@ -12,16 +12,11 @@ grn vks get-quota
 
 ## Options
 
-No command-specific options. See [Global Options](../../usage/global-options.md) for flags available on all commands.
+This command takes only the global options.
 
-## Output fields
+## Global options
 
-| Field | Description |
-|-------|-------------|
-| `maxClusters` | Maximum number of clusters allowed |
-| `maxNodeGroupsPerCluster` | Maximum number of node groups per cluster |
-| `maxNodesPerNodeGroup` | Maximum number of nodes per node group |
-| `numClusters` | Current number of clusters in use |
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 
@@ -42,7 +37,7 @@ Output:
 }
 ```
 
-Get only the maximum cluster limit:
+Extract only the maximum cluster limit:
 
 ```bash
 grn vks get-quota --query maxClusters

@@ -39,8 +39,13 @@ func runConfigure(cmd *cobra.Command, args []string) {
 		profile = "default"
 	}
 
-	// Load existing config for defaults
-	cfg, _ := config.LoadConfig(profile)
+	// Load existing config for defaults. A new/unknown profile (or a parse error)
+	// yields no config — start from empty defaults so `configure` can create it
+	// instead of crashing on a nil dereference.
+	cfg, err := config.LoadConfig(profile)
+	if err != nil || cfg == nil {
+		cfg = &config.Config{}
+	}
 
 	reader := bufio.NewReader(os.Stdin)
 

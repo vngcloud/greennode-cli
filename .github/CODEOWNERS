@@ -7,8 +7,9 @@
 /go/cmd/configure/   @vngcloud/platform
 /go/main.go          @vngcloud/platform
 
-# Shared docs, changelog, and CI — additive but cross-team; platform reviews.
-/.changes/           @vngcloud/platform
+# Shared release/CI config and docs — cross-team; platform reviews.
+/release-please-config.json      @vngcloud/platform
+/.release-please-manifest.json   @vngcloud/platform
 /.github/            @vngcloud/platform
 /mkdocs.yml          @vngcloud/platform
 /docs/development/  @vngcloud/platform

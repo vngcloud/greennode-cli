@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -14,7 +15,10 @@ var rebootCmd = &cobra.Command{
 }
 
 func init() {
-	rebootCmd.Flags().String("server-id", "", "Server ID (required)")
+	f := rebootCmd.Flags()
+	f.String("server-id", "", "Server ID (required)")
+	f.Bool("dry-run", false, "Preview the reboot action without executing")
+	f.Bool("force", false, "Skip confirmation prompt")
 	rebootCmd.MarkFlagRequired("server-id")
 }
 
@@ -32,6 +36,24 @@ func runReboot(cmd *cobra.Command, args []string) error {
 	projectID, err := getProjectID(cfg)
 	if err != nil {
 		return err
+	}
+
+	force, _ := cmd.Flags().GetBool("force")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
+
+	fmt.Println("The following server will be rebooted:")
+	fmt.Println()
+	fmt.Printf("  ID: %s\n", serverID)
+	fmt.Println()
+	fmt.Println("This will interrupt the server.")
+
+	if dryRun {
+		cli.DryRunNotice("reboot")
+		return nil
+	}
+	if !cli.Confirm(force, "Are you sure you want to reboot this server?") {
+		fmt.Println("Aborted.")
+		return nil
 	}
 
 	result, err := apiClient.Put(fmt.Sprintf("/v2/%s/servers/%s/reboot", projectID, serverID), nil)

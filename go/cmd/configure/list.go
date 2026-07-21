@@ -31,7 +31,17 @@ func runList(cmd *cobra.Command, args []string) {
 		profile = "default"
 	}
 
-	cfg, _ := config.LoadConfig(profile)
+	// Report a missing profile like `aws configure list` does, rather than
+	// printing empty values. LoadConfig only errors when config files exist but
+	// the profile is in neither — a fresh machine still lists unset defaults.
+	cfg, err := config.LoadConfig(profile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+	if cfg == nil {
+		cfg = &config.Config{}
+	}
 	configDir := config.DefaultConfigDir()
 	credsFile := filepath.Join(configDir, "credentials")
 	configFile := filepath.Join(configDir, "config")

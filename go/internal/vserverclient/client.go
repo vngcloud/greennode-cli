@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vngcloud/greennode-cli/internal/auth"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/client"
 	"github.com/vngcloud/greennode-cli/internal/config"
 	"github.com/vngcloud/greennode-cli/internal/formatter"
@@ -19,7 +20,13 @@ func BuildClient(cmd *cobra.Command) (*client.GreenodeClient, *config.Config, er
 	endpointURL, _ := cmd.Flags().GetString("endpoint-url")
 	noVerifySSL, _ := cmd.Flags().GetBool("no-verify-ssl")
 	debug, _ := cmd.Flags().GetBool("debug")
+	allowUntrusted, _ := cmd.Flags().GetBool("allow-untrusted-endpoint")
+	connectTimeout, _ := cmd.Flags().GetInt("cli-connect-timeout")
 	readTimeout, _ := cmd.Flags().GetInt("cli-read-timeout")
+
+	if err := cli.CheckEndpoint(endpointURL, noVerifySSL, allowUntrusted); err != nil {
+		return nil, nil, err
+	}
 
 	cfg, err := config.LoadConfig(profile)
 	if err != nil {
@@ -49,9 +56,10 @@ func BuildClient(cmd *cobra.Command) (*client.GreenodeClient, *config.Config, er
 	}
 
 	tokenManager := auth.NewTokenManager(cfg.ClientID, cfg.ClientSecret)
-	timeout := time.Duration(readTimeout) * time.Second
+	connect := time.Duration(connectTimeout) * time.Second
+	read := time.Duration(readTimeout) * time.Second
 
-	return client.NewGreenodeClient(baseURL, tokenManager, timeout, !noVerifySSL, debug), cfg, nil
+	return client.NewGreenodeClient(baseURL, tokenManager, connect, read, !noVerifySSL, debug), cfg, nil
 }
 
 // ProjectID extracts and validates the project ID from config.
@@ -74,7 +82,8 @@ func Output(cmd *cobra.Command, cfg *config.Config, data interface{}) error {
 		output = "json"
 	}
 
-	return formatter.Format(data, output, query, os.Stdout)
+	colorMode, _ := cmd.Flags().GetString("color")
+	return formatter.FormatColor(data, output, query, os.Stdout, formatter.ColorEnabled(colorMode, os.Stdout))
 }
 
 // OutputWithColumns formats and writes the API result to stdout.
@@ -90,8 +99,10 @@ func OutputWithColumns(cmd *cobra.Command, cfg *config.Config, data interface{},
 		output = "json"
 	}
 
+	colorMode, _ := cmd.Flags().GetString("color")
+	color := formatter.ColorEnabled(colorMode, os.Stdout)
 	if output == "table" && len(columns) > 0 {
-		return formatter.FormatTableWithColumns(data, columns, query, os.Stdout)
+		return formatter.FormatTableWithColumnsColor(data, columns, query, os.Stdout, color)
 	}
-	return formatter.Format(data, output, query, os.Stdout)
+	return formatter.FormatColor(data, output, query, os.Stdout, color)
 }

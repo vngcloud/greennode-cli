@@ -19,9 +19,6 @@ func outputResult(cmd *cobra.Command, cfg *config.Config, data interface{}) erro
 	return vserverclient.Output(cmd, cfg, data)
 }
 
-// transformFamilies reshapes each family item:
-//
-//	{condition:{codes:[...]}, key, value, description} → {name, cpu-platforms:[...], description}
 func transformFamilies(result interface{}) interface{} {
 	transform := func(item interface{}) interface{} {
 		obj, ok := item.(map[string]interface{})
@@ -64,9 +61,6 @@ func transformFamilies(result interface{}) interface{} {
 	return result
 }
 
-// transformCodes reshapes each code item:
-//
-//	{key, value, description} → {name, description}
 func transformCodes(result interface{}) interface{} {
 	transform := func(item interface{}) interface{} {
 		obj, ok := item.(map[string]interface{})

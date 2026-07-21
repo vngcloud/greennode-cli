@@ -1,19 +1,20 @@
 package vks
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
 var setAutoUpgradeConfigCmd = &cobra.Command{
-	Use:   "set-auto-upgrade-config",
+	Use:   "config-auto-upgrade",
 	Short: "Configure auto-upgrade schedule for a cluster",
-	RunE:  runSetAutoUpgradeConfig,
+	// set-auto-upgrade-config is the former name, kept for backward compatibility.
+	Aliases: []string{"set-auto-upgrade-config"},
+	RunE:    runSetAutoUpgradeConfig,
 }
 
 var deleteAutoUpgradeConfigCmd = &cobra.Command{
@@ -23,11 +24,12 @@ var deleteAutoUpgradeConfigCmd = &cobra.Command{
 }
 
 func init() {
-	// set-auto-upgrade-config flags
+	// config-auto-upgrade flags
 	f := setAutoUpgradeConfigCmd.Flags()
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("weekdays", "", "Days of the week, e.g. Mon,Wed,Fri (required)")
 	f.String("time", "", "Time of day in 24h format HH:mm, e.g. 03:00 (required)")
+	f.Bool("dry-run", false, "Preview the auto-upgrade config without executing")
 	setAutoUpgradeConfigCmd.MarkFlagRequired("cluster-id")
 	setAutoUpgradeConfigCmd.MarkFlagRequired("weekdays")
 	setAutoUpgradeConfigCmd.MarkFlagRequired("time")
@@ -35,6 +37,7 @@ func init() {
 	// delete-auto-upgrade-config flags
 	g := deleteAutoUpgradeConfigCmd.Flags()
 	g.String("cluster-id", "", "Cluster ID (required)")
+	g.Bool("dry-run", false, "Preview what will be deleted without executing")
 	g.Bool("force", false, "Skip confirmation prompt")
 	deleteAutoUpgradeConfigCmd.MarkFlagRequired("cluster-id")
 }
@@ -43,19 +46,25 @@ func runSetAutoUpgradeConfig(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	weekdays, _ := cmd.Flags().GetString("weekdays")
 	timeVal, _ := cmd.Flags().GetString("time")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
-		return err
-	}
-
-	apiClient, err := createClient(cmd)
-	if err != nil {
 		return err
 	}
 
 	body := map[string]interface{}{
 		"weekdays": weekdays,
 		"time":     timeVal,
+	}
+
+	if dryRun {
+		cli.PrintDryRun("configure", fmt.Sprintf("auto-upgrade for cluster %s", clusterID), body)
+		return nil
+	}
+
+	apiClient, err := createClient(cmd)
+	if err != nil {
+		return err
 	}
 
 	result, err := apiClient.Put(
@@ -71,20 +80,25 @@ func runSetAutoUpgradeConfig(cmd *cobra.Command, args []string) error {
 
 func runDeleteAutoUpgradeConfig(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 	force, _ := cmd.Flags().GetBool("force")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
 		return err
 	}
 
-	if !force {
-		fmt.Print("Are you sure you want to delete the auto-upgrade config? (yes/no): ")
-		reader := bufio.NewReader(os.Stdin)
-		response, _ := reader.ReadString('\n')
-		if strings.TrimSpace(strings.ToLower(response)) != "yes" {
-			fmt.Println("Delete cancelled.")
-			return nil
-		}
+	fmt.Println("The following will be deleted:")
+	fmt.Printf("  Auto-upgrade config for cluster: %s\n", clusterID)
+	fmt.Println("\nThis action is irreversible.")
+
+	if dryRun {
+		cli.DryRunNotice("delete")
+		return nil
+	}
+
+	if !cli.Confirm(force, "Are you sure you want to delete the auto-upgrade config?") {
+		fmt.Println("Aborted.")
+		return nil
 	}
 
 	apiClient, err := createClient(cmd)

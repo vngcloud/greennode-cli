@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -19,8 +20,9 @@ func init() {
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.Bool("enable-auto-healing", false, "Enable auto-healing (required)")
 	f.String("max-unhealthy", "", "Max unhealthy nodes, e.g. \"30%\"")
-	f.String("unhealthy-range", "", "Unhealthy range")
+	f.String("unhealthy-range", "", "Unhealthy node count range as \"[min-max]\", e.g. \"[2-5]\"")
 	f.Int("timeout-unhealthy", 0, "Unhealthy timeout in seconds")
+	f.Bool("dry-run", false, "Preview the auto-healing config without executing")
 
 	configAutoHealingCmd.MarkFlagRequired("cluster-id")
 	configAutoHealingCmd.MarkFlagRequired("enable-auto-healing")
@@ -46,6 +48,7 @@ func runConfigAutoHealing(cmd *cobra.Command, args []string) error {
 	maxUnhealthy, _ := cmd.Flags().GetString("max-unhealthy")
 	unhealthyRange, _ := cmd.Flags().GetString("unhealthy-range")
 	timeoutUnhealthy, _ := cmd.Flags().GetInt("timeout-unhealthy")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
 		return err
@@ -56,7 +59,17 @@ func runConfigAutoHealing(cmd *cobra.Command, args []string) error {
 		"unhealthy-range":   cmd.Flags().Changed("unhealthy-range"),
 		"timeout-unhealthy": cmd.Flags().Changed("timeout-unhealthy"),
 	}
+
+	// The API accepts at most one of maxUnhealthy / unhealthyRange.
+	if changed["max-unhealthy"] && changed["unhealthy-range"] {
+		return fmt.Errorf("set exactly one of --max-unhealthy or --unhealthy-range, not both")
+	}
 	body := buildAutoHealingBody(enable, maxUnhealthy, unhealthyRange, timeoutUnhealthy, changed)
+
+	if dryRun {
+		cli.PrintDryRun("configure", fmt.Sprintf("auto-healing for cluster %s", clusterID), body)
+		return nil
+	}
 
 	apiClient, err := createClient(cmd)
 	if err != nil {

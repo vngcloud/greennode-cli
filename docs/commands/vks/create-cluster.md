@@ -2,13 +2,11 @@
 
 ## Description
 
-Create a new VKS cluster with an initial default node group. The command provisions both the control plane and the first node group in a single call.
+Create a new VKS cluster. By default only the control plane is provisioned; add worker nodes afterwards with [create-nodegroup](create-nodegroup.md).
 
-Cluster names must be 5–20 characters, lowercase alphanumeric and hyphens, starting and ending with an alphanumeric character. Node group names follow the same pattern with a length of 5–15 characters.
+When `--network-type` is `TIGERA` or `CILIUM_OVERLAY`, `--cidr` is required. When it is `CILIUM_NATIVE_ROUTING`, both `--node-netmask-size` and at least one `--secondary-subnets` value are required. The load balancer and block store CSI plugins are enabled by default.
 
-When `--network-type` is `CALICO` or `CILIUM_OVERLAY`, the `--cidr` option is required. By default, both the load balancer plugin and the block store CSI plugin are enabled; use the `--no-*` flags to disable them.
-
-Use `--dry-run` to validate all parameters without sending a create request.
+Use `--dry-run` to validate parameters without sending a create request. Dry-run performs local checks only — whether the `--k8s-version` is available on the selected `--release-channel`, that the VPC and subnets exist, and quota availability are validated by the server on the actual create.
 
 ## Synopsis
 
@@ -18,147 +16,221 @@ grn vks create-cluster
     --k8s-version <value>
     --network-type <value>
     --vpc-id <value>
-    --subnet-id <value>
-    --node-group-name <value>
-    --flavor-id <value>
-    --image-id <value>
-    --disk-type <value>
-    --ssh-key-id <value>
+    [--subnet-id <value>]
+    [--list-subnet-ids <value>]
     [--cidr <value>]
     [--description <value>]
-    [--enable-private-cluster]
+    [--private-cluster <enabled|disabled>]
     [--release-channel <value>]
-    [--enabled-load-balancer-plugin]
-    [--no-load-balancer-plugin]
-    [--enabled-block-store-csi-plugin]
-    [--no-block-store-csi-plugin]
-    [--disk-size <value>]
-    [--num-nodes <value>]
-    [--enable-private-nodes]
-    [--security-groups <value>]
-    [--labels <value>]
-    [--taints <value>]
+    [--load-balancer-plugin <enabled|disabled>]
+    [--block-store-csi-plugin <enabled|disabled>]
+    [--service-endpoint <enabled|disabled>]
+    [--az-strategy <value>]
+    [--secondary-subnets <value>]
+    [--node-netmask-size <value>]
+    [--auto-upgrade-config <value>]
+    [--auto-healing-config <value>]
     [--dry-run]
 ```
 
 ## Options
 
-**Cluster settings**
+**`--name`** (string)
 
-`--name` (required)
-: Cluster name. Must be 5–20 characters, lowercase alphanumeric and hyphens, starting and ending with an alphanumeric character.
+Name of the cluster.
 
-`--k8s-version` (required)
-: Kubernetes version for the cluster (e.g. `v1.29.1`).
+- Required: Yes
+- Constraints: 5–20 characters; lowercase letters, digits, and hyphens; must start and end with a letter or digit.
 
-`--network-type` (required)
-: Network type for the cluster. Accepted values: `CALICO`, `CILIUM_OVERLAY`, `CILIUM_NATIVE_ROUTING`.
+**`--k8s-version`** (string)
 
-`--vpc-id` (required)
-: VPC ID where the cluster will be provisioned.
+Kubernetes version for the cluster (e.g. `v1.29.13-vks.1740045600`).
 
-`--subnet-id` (required)
-: Subnet ID for the cluster control plane and the default node group.
+- Required: Yes
+- See available versions with [list-cluster-versions](list-cluster-versions.md).
 
-`--cidr` (optional)
-: Pod CIDR block. Required when `--network-type` is `CALICO` or `CILIUM_OVERLAY` (e.g. `10.96.0.0/12`).
+**`--network-type`** (string)
 
-`--description` (optional)
-: Human-readable description for the cluster.
+Cluster network plugin.
 
-`--enable-private-cluster` (optional)
-: Enable private cluster mode (control plane not accessible from the public internet).
+- Required: Yes
+- Possible values: `TIGERA`, `CILIUM_OVERLAY`, `CILIUM_NATIVE_ROUTING`
 
-`--release-channel` (optional)
-: Release channel for automatic upgrades. Accepted values: `RAPID`, `STABLE`. Default: `STABLE`.
+**`--vpc-id`** (string)
 
-`--enabled-load-balancer-plugin` (optional)
-: Explicitly enable the load balancer plugin (enabled by default).
+ID of the VPC to provision the cluster in.
 
-`--no-load-balancer-plugin` (optional)
-: Disable the load balancer plugin.
+- Required: Yes
 
-`--enabled-block-store-csi-plugin` (optional)
-: Explicitly enable the block store CSI plugin (enabled by default).
+**`--subnet-id`** (string)
 
-`--no-block-store-csi-plugin` (optional)
-: Disable the block store CSI plugin.
+Subnet ID for the cluster control plane.
 
-**Node group settings**
+- Required: No
+- Provide `--subnet-id`, `--list-subnet-ids`, or neither — the server validates the combination.
 
-`--node-group-name` (required)
-: Name of the initial node group. Must be 5–15 characters, lowercase alphanumeric and hyphens, starting and ending with an alphanumeric character.
+**`--list-subnet-ids`** (list&lt;string&gt;)
 
-`--flavor-id` (required)
-: Flavor (instance type) ID for the nodes.
+Subnet IDs for the cluster, comma-separated.
 
-`--image-id` (required)
-: OS image ID for the nodes.
+- Required: No
+- Syntax: `sub-aaa,sub-bbb`
 
-`--disk-type` (required)
-: Disk type ID for the node boot volumes.
+**`--cidr`** (string)
 
-`--ssh-key-id` (required)
-: SSH key pair ID to inject into each node.
+Pod CIDR block (e.g. `10.96.0.0/12`).
 
-`--disk-size` (optional)
-: Boot disk size in GiB. Accepted range: 20–5000. Default: `100`.
+- Required: Conditional — required when `--network-type` is `TIGERA` or `CILIUM_OVERLAY`.
 
-`--num-nodes` (optional)
-: Number of nodes to create in the default node group. Accepted range: 0–10. Default: `1`.
+**`--description`** (string)
 
-`--enable-private-nodes` (optional)
-: Enable private nodes (nodes will not have public IP addresses).
+Human-readable description for the cluster.
 
-`--security-groups` (optional)
-: Comma-separated list of security group IDs to attach to the nodes (e.g. `sg-aaa111,sg-bbb222`).
+- Required: No
 
-`--labels` (optional)
-: Comma-separated `key=value` pairs to add as Kubernetes node labels (e.g. `env=prod,tier=app`).
+**`--private-cluster`** (string)
 
-`--taints` (optional)
-: Comma-separated node taints in `key=value:effect` format (e.g. `dedicated=gpu:NoSchedule`).
+Control-plane accessibility. `enabled` makes the control plane unreachable from the public internet.
 
-`--dry-run` (optional)
-: Validate all parameters and print a report without sending the create request.
+- Required: No
+- Default: `disabled`
+- Possible values: `enabled`, `disabled`
+
+**`--release-channel`** (string)
+
+Release channel for automatic upgrades.
+
+- Required: No
+- Default: `STABLE`
+- Possible values: `RAPID`, `STABLE`
+
+**`--load-balancer-plugin`** (string)
+
+Load balancer plugin state.
+
+- Required: No
+- Default: `enabled`
+- Possible values: `enabled`, `disabled`
+
+**`--block-store-csi-plugin`** (string)
+
+Block store CSI plugin state.
+
+- Required: No
+- Default: `enabled`
+- Possible values: `enabled`, `disabled`
+
+**`--service-endpoint`** (string)
+
+Service endpoint state.
+
+- Required: No
+- Default: `disabled`
+- Possible values: `enabled`, `disabled`
+
+**`--az-strategy`** (string)
+
+Availability-zone strategy for the cluster.
+
+- Required: No
+- Default: `SINGLE`
+
+**`--secondary-subnets`** (list&lt;string&gt;)
+
+Secondary subnet IDs, comma-separated. Used by `CILIUM_NATIVE_ROUTING`.
+
+- Required: Conditional — at least one value is required when `--network-type` is `CILIUM_NATIVE_ROUTING`.
+- Constraints: up to 10 entries.
+- Syntax: `sub-aaa,sub-bbb`
+
+**`--node-netmask-size`** (integer)
+
+Node CIDR mask size used in `CILIUM_NATIVE_ROUTING` mode. Only sent when explicitly provided.
+
+- Required: Conditional — required when `--network-type` is `CILIUM_NATIVE_ROUTING`.
+- Possible values: `24`, `25`, `26` (default `25`).
+
+**`--auto-upgrade-config`** (structure)
+
+Auto-upgrade schedule. Accepts shorthand or JSON.
+
+- Required: No
+- Members:
+    - `weekdays` (string) — days to run auto-upgrade, e.g. `Mon,Wed,Fri`
+    - `time` (string) — time of day, 24-hour `HH:mm`, e.g. `03:00`
+
+Shorthand syntax (use JSON when `weekdays` has multiple days, since shorthand splits on commas):
+
+```
+time=03:00,weekdays=Mon
+```
+
+JSON syntax:
+
+```json
+{"weekdays": "Mon,Wed,Fri", "time": "03:00"}
+```
+
+**`--auto-healing-config`** (structure)
+
+Auto-healing configuration. Accepts shorthand or JSON. When `enableAutoHealing` is `true`, set **exactly one** of `maxUnhealthy` or `unhealthyRange` — the API rejects both together.
+
+- Required: No
+- Members:
+    - `enableAutoHealing` (boolean) — enable or disable auto-healing
+    - `maxUnhealthy` (string) — maximum unhealthy nodes, e.g. `20%` (mutually exclusive with `unhealthyRange`)
+    - `unhealthyRange` (string) — unhealthy node count range, e.g. `[2-5]` (mutually exclusive with `maxUnhealthy`)
+    - `timeoutUnhealthy` (integer) — minutes to wait before considering a node unhealthy (5–180)
+
+Shorthand syntax:
+
+```
+enableAutoHealing=true,maxUnhealthy=20%,timeoutUnhealthy=10
+```
+
+JSON syntax:
+
+```json
+{"enableAutoHealing": true, "maxUnhealthy": "20%", "timeoutUnhealthy": 10}
+```
+
+**`--dry-run`** (boolean)
+
+Validate parameters and print a report without sending the create request.
+
+- Required: No
+- Default: `false`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 
-Create a minimal cluster with CILIUM_NATIVE_ROUTING:
+Create a cluster (control plane only) with CILIUM_NATIVE_ROUTING:
 
 ```bash
 grn vks create-cluster \
   --name my-cluster \
-  --k8s-version v1.29.1 \
+  --k8s-version v1.29.13-vks.1740045600 \
   --network-type CILIUM_NATIVE_ROUTING \
   --vpc-id net-abc12345-0000-0000-0000-000000000001 \
   --subnet-id sub-abc12345-0000-0000-0000-000000000001 \
-  --node-group-name default-ng \
-  --flavor-id flv-2c4g \
-  --image-id img-ubuntu-22-04-k8s \
-  --disk-type SSD \
-  --ssh-key-id key-abc12345-0000-0000-0000-000000000001
+  --node-netmask-size 25 \
+  --secondary-subnets sub-abc12345-0000-0000-0000-000000000002
 ```
 
-Create a cluster with CALICO network type (CIDR required):
+Create a cluster with TIGERA (CIDR required) and auto-healing:
 
 ```bash
 grn vks create-cluster \
   --name prod-cluster \
-  --k8s-version v1.29.1 \
-  --network-type CALICO \
+  --k8s-version v1.29.13-vks.1740045600 \
+  --network-type TIGERA \
   --cidr 10.96.0.0/12 \
   --vpc-id net-abc12345-0000-0000-0000-000000000001 \
   --subnet-id sub-abc12345-0000-0000-0000-000000000001 \
-  --node-group-name prod-ng \
-  --flavor-id flv-4c8g \
-  --image-id img-ubuntu-22-04-k8s \
-  --disk-type SSD \
-  --disk-size 200 \
-  --num-nodes 3 \
-  --ssh-key-id key-abc12345-0000-0000-0000-000000000001 \
-  --labels env=prod,tier=app \
-  --taints dedicated=gpu:NoSchedule
+  --auto-healing-config 'enableAutoHealing=true,maxUnhealthy=20%,timeoutUnhealthy=10'
 ```
 
 Validate parameters without creating (dry run):
@@ -166,14 +238,10 @@ Validate parameters without creating (dry run):
 ```bash
 grn vks create-cluster \
   --name my-cluster \
-  --k8s-version v1.29.1 \
+  --k8s-version v1.29.13-vks.1740045600 \
   --network-type CILIUM_NATIVE_ROUTING \
   --vpc-id net-abc12345-0000-0000-0000-000000000001 \
-  --subnet-id sub-abc12345-0000-0000-0000-000000000001 \
-  --node-group-name default-ng \
-  --flavor-id flv-2c4g \
-  --image-id img-ubuntu-22-04-k8s \
-  --disk-type SSD \
-  --ssh-key-id key-abc12345-0000-0000-0000-000000000001 \
+  --node-netmask-size 25 \
+  --secondary-subnets sub-abc12345-0000-0000-0000-000000000002 \
   --dry-run
 ```

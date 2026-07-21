@@ -24,14 +24,14 @@ var VServerCmd = &cobra.Command{
 	Use:   "vserver",
 	Short: "VNG Virtual Server (vServer) commands",
 	Long:  "Manage vServer instances and related resources.",
+	// Reject unknown subcommands (nested groups don't error by default in cobra).
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
 }
 
 func init() {
-	cli.RegisterService(VServerCmd)
-
 	VServerCmd.AddCommand(server.ServerCmd)
 	VServerCmd.AddCommand(volume.VolumeCmd)
 	VServerCmd.AddCommand(vpc.VpcCmd)
@@ -48,4 +48,5 @@ func init() {
 	VServerCmd.AddCommand(dhcp.DhcpCmd)
 
 	registerCompletions()
+	cli.RegisterService(VServerCmd)
 }

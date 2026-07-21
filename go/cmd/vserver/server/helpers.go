@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/vngcloud/greennode-cli/internal/client"
@@ -23,24 +24,23 @@ func outputResult(cmd *cobra.Command, cfg *config.Config, data interface{}) erro
 	return vserverclient.Output(cmd, cfg, data)
 }
 
-// resolveOutput returns the effective output format, mirroring vserverclient.Output:
-// the --output flag, falling back to the configured default, then "json".
-func resolveOutput(cmd *cobra.Command, cfg *config.Config) string {
-	output, _ := cmd.Flags().GetString("output")
-	if output == "" && cfg != nil {
-		output = cfg.Output
-	}
-	if output == "" {
-		output = "json"
-	}
-	return output
-}
-
 // serverListColumns defines the columns shown in table mode for server list.
-var serverListColumns = []string{"uuid", "name", "status", "privateIp", "publicIp"}
+var serverListColumns = []string{"name", "status", "privateIp", "publicIp", "zone", "created", "app", "uuid"}
 
 // serverDetailColumns defines the columns shown in table mode for a single server.
-var serverDetailColumns = []string{"uuid", "name", "status", "privateIp", "publicIp", "zoneId", "createdAt"}
+var serverDetailColumns = []string{"uuid", "name", "status", "privateIp", "publicIp", "zone", "created"}
+
+// serverListFields defines which fields are included in list output (JSON and table).
+var serverListFields = map[string]bool{
+	"name":      true,
+	"status":    true,
+	"privateIp": true,
+	"publicIp":  true,
+	"zone":      true,
+	"created":   true,
+	"app":       true,
+	"uuid":      true,
+}
 
 func outputServerList(cmd *cobra.Command, cfg *config.Config, data interface{}) error {
 	return vserverclient.OutputWithColumns(cmd, cfg, data, serverListColumns)
@@ -131,8 +131,31 @@ var serverRemoveKeys = map[string]bool{
 	"migrateState":      true,
 	"enableLog":         true,
 	"enableMetric":      true,
-	"product":           true,
 	"metadata":          true,
+}
+
+func formatDateOnly(v interface{}) interface{} {
+	s, ok := v.(string)
+	if !ok || s == "" {
+		return v
+	}
+	formats := []string{
+		time.RFC3339Nano,
+		time.RFC3339,
+		"2006-01-02T15:04:05.000Z",
+		"2006-01-02T15:04:05Z",
+		"2006-01-02 15:04:05",
+		"2006-01-02",
+	}
+	for _, f := range formats {
+		if t, err := time.Parse(f, s); err == nil {
+			return t.UTC().Format("2006-01-02")
+		}
+	}
+	if len(s) >= 10 {
+		return s[:10]
+	}
+	return s
 }
 
 func transformServer(obj map[string]interface{}) map[string]interface{} {
@@ -161,7 +184,27 @@ func transformServer(obj map[string]interface{}) map[string]interface{} {
 					result["publicIp"] = iface["floatingIp"]
 				}
 			}
+		case "zoneId":
+			result["zone"] = v
+		case "createdAt":
+			result["created"] = formatDateOnly(v)
+		case "product":
+			if prod, ok := v.(map[string]interface{}); ok {
+				if name, ok := prod["name"].(string); ok && name != "" {
+					result["app"] = name
+				}
+			}
 		default:
+			result[k] = v
+		}
+	}
+	return result
+}
+
+func filterServerListFields(obj map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{}, len(serverListFields))
+	for k, v := range obj {
+		if serverListFields[k] && v != nil {
 			result[k] = v
 		}
 	}
@@ -172,7 +215,7 @@ func transformServerList(items []interface{}) []interface{} {
 	out := make([]interface{}, len(items))
 	for i, item := range items {
 		if obj, ok := item.(map[string]interface{}); ok {
-			out[i] = transformServer(obj)
+			out[i] = filterServerListFields(transformServer(obj))
 		} else {
 			out[i] = item
 		}

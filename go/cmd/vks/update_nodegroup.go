@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -18,36 +19,23 @@ func init() {
 	f := updateNodegroupCmd.Flags()
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("nodegroup-id", "", "Node group ID (required)")
-	f.String("image-id", "", "Image ID (required)")
 	f.String("num-nodes", "", "New number of nodes")
 	f.String("security-groups", "", "Security group IDs (comma-separated)")
-	f.String("labels", "", "Node labels as key=value pairs (comma-separated)")
-	f.String("taints", "", "Node taints as key=value:effect (comma-separated)")
-	f.String("auto-scale-min", "", "Auto-scale minimum nodes")
-	f.String("auto-scale-max", "", "Auto-scale maximum nodes")
-	f.String("upgrade-strategy", "", "Upgrade strategy (SURGE)")
-	f.String("upgrade-max-surge", "", "Max surge during upgrade")
-	f.String("upgrade-max-unavailable", "", "Max unavailable during upgrade")
+	f.String("auto-scale", "", "Auto-scale config (shorthand minSize=2,maxSize=10 or JSON)")
+	f.String("upgrade-config", "", "Upgrade config (shorthand maxSurge=1,maxUnavailable=0,strategy=SURGE or JSON)")
 	f.Bool("dry-run", false, "Preview update without executing")
 
 	updateNodegroupCmd.MarkFlagRequired("cluster-id")
 	updateNodegroupCmd.MarkFlagRequired("nodegroup-id")
-	updateNodegroupCmd.MarkFlagRequired("image-id")
 }
 
 func runUpdateNodegroup(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	nodegroupID, _ := cmd.Flags().GetString("nodegroup-id")
-	imageID, _ := cmd.Flags().GetString("image-id")
 	numNodes, _ := cmd.Flags().GetString("num-nodes")
 	securityGroups, _ := cmd.Flags().GetString("security-groups")
-	labelsStr, _ := cmd.Flags().GetString("labels")
-	taintsStr, _ := cmd.Flags().GetString("taints")
-	autoScaleMin, _ := cmd.Flags().GetString("auto-scale-min")
-	autoScaleMax, _ := cmd.Flags().GetString("auto-scale-max")
-	upgradeStrategy, _ := cmd.Flags().GetString("upgrade-strategy")
-	upgradeMaxSurge, _ := cmd.Flags().GetString("upgrade-max-surge")
-	upgradeMaxUnavail, _ := cmd.Flags().GetString("upgrade-max-unavailable")
+	autoScaleStr, _ := cmd.Flags().GetString("auto-scale")
+	upgradeConfigStr, _ := cmd.Flags().GetString("upgrade-config")
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
@@ -57,9 +45,7 @@ func runUpdateNodegroup(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	body := map[string]interface{}{
-		"imageId": imageID,
-	}
+	body := map[string]interface{}{}
 
 	if numNodes != "" {
 		body["numNodes"] = toInt(numNodes)
@@ -67,36 +53,23 @@ func runUpdateNodegroup(cmd *cobra.Command, args []string) error {
 	if securityGroups != "" {
 		body["securityGroups"] = parseCommaSeparated(securityGroups)
 	}
-	if labelsStr != "" {
-		body["labels"] = parseLabels(labelsStr)
-	}
-	if taintsStr != "" {
-		body["taints"] = parseTaints(taintsStr)
-	}
-
-	if autoScaleMin != "" || autoScaleMax != "" {
-		autoScaleConfig := map[string]interface{}{}
-		if autoScaleMin != "" {
-			autoScaleConfig["minSize"] = toInt(autoScaleMin)
+	if autoScaleStr != "" {
+		asc, err := cli.ParseStructFlag(autoScaleStr, "minSize", "maxSize")
+		if err != nil {
+			return fmt.Errorf("--auto-scale: %w", err)
 		}
-		if autoScaleMax != "" {
-			autoScaleConfig["maxSize"] = toInt(autoScaleMax)
+		body["autoScaleConfig"] = asc
+	}
+	if upgradeConfigStr != "" {
+		uc, err := cli.ParseStructFlag(upgradeConfigStr, "maxSurge", "maxUnavailable")
+		if err != nil {
+			return fmt.Errorf("--upgrade-config: %w", err)
 		}
-		body["autoScaleConfig"] = autoScaleConfig
+		body["upgradeConfig"] = uc
 	}
 
-	if upgradeStrategy != "" || upgradeMaxSurge != "" || upgradeMaxUnavail != "" {
-		upgradeConfig := map[string]interface{}{}
-		if upgradeStrategy != "" {
-			upgradeConfig["strategy"] = upgradeStrategy
-		}
-		if upgradeMaxSurge != "" {
-			upgradeConfig["maxSurge"] = toInt(upgradeMaxSurge)
-		}
-		if upgradeMaxUnavail != "" {
-			upgradeConfig["maxUnavailable"] = toInt(upgradeMaxUnavail)
-		}
-		body["upgradeConfig"] = upgradeConfig
+	if len(body) == 0 {
+		return fmt.Errorf("nothing to update: provide at least one of --num-nodes, --security-groups, --auto-scale, or --upgrade-config (use 'update-nodegroup-metadata' for labels/tags/taints)")
 	}
 
 	if dryRun {

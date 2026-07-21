@@ -1,41 +1,46 @@
 # Release Process
 
-## Adding changelog entries
+Versioning and the changelog are automated by [release-please](https://github.com/googleapis/release-please).
+**Never edit the version (`go/cmd/root.go`) or `CHANGELOG.md` by hand**, and never
+create tags manually — release-please derives everything from commit messages.
 
-```bash
-./scripts/new-change                          # Interactive
-./scripts/new-change -t feature -c vks -d "Add new command"  # CLI args
-```
+## During development
 
-Change types: `feature`, `bugfix`, `enhancement`, `api-change`
+- Branch from `main`, open a PR with a **Conventional Commits** title
+  (`feat:`, `fix:`, `docs:`, `feat!:`, …). The `Conventional Commits title` check
+  enforces this.
+- PRs are **squash-merged**, so the PR title becomes the commit message that
+  release-please reads.
 
-## Creating a release
+Bump rules: `fix:` → patch, `feat:` → minor, `feat!:` / `BREAKING CHANGE:` → major.
+Wrong bump? Fix the PR title — do not touch the version file.
 
-```bash
-./scripts/bump-version patch   # 0.1.0 → 0.1.1
-./scripts/bump-version minor   # 0.1.0 → 0.2.0
-./scripts/bump-version major   # 0.1.0 → 1.0.0
-git push && git push --tags    # Triggers GitHub Actions release
-```
+## Cutting a release
 
-## Release flow
+1. As `feat`/`fix` PRs merge to `main`, release-please opens/refreshes a
+   **`chore: release main`** PR that bumps the version in `go/cmd/root.go` and
+   updates `CHANGELOG.md`.
+2. **Squash-merge that release PR.** release-please then tags `vX.Y.Z` and creates
+   the GitHub Release; the release workflow builds the multi-platform binaries and
+   attaches them.
 
-```
-Developer workflow:
-1. During development: ./scripts/new-change (add fragments per PR)
-2. Ready to release:   ./scripts/bump-version minor
-3. Push:               git push && git push --tags
+> If the release PR's checks don't start (a limitation of the default
+> `GITHUB_TOKEN`), close & reopen it once — or configure a `RELEASE_PLEASE_TOKEN`
+> PAT (contents: write, pull-requests: write) so checks run automatically.
 
-GitHub Actions (automatic):
-4. Build Go binaries for Linux/macOS/Windows (amd64 + arm64)
-5. Create GitHub Release with binaries attached
-```
+## Manual / emergency release
+
+`release.yml` still accepts a tag push (`git tag vX.Y.Z && git push --tags`) or a
+`workflow_dispatch`, which builds the binaries and creates the release directly.
+Prefer the release-please flow for normal releases.
 
 ## CI/CD workflows
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `run-tests.yml` | PR to main/develop | Build + test Go binary |
-| `release.yml` | Tag push `v*`, manual dispatch | Build multi-platform binaries + GitHub Release |
+| `run-tests.yml` | PR | Lint (gofmt + go vet), build, and test the Go binary |
+| `pr-title.yml` | PR opened/edited | Enforce Conventional Commits PR title |
+| `release-please.yml` | Push to `main` | Maintain the release PR; on merge, tag + release + build binaries |
+| `release.yml` | Tag push `v*`, dispatch, or called by release-please | Build multi-platform binaries + attach to the release |
 | `deploy-docs.yml` | Push to main (docs/) | Deploy documentation to GitHub Pages |
 | `stale.yml` | Daily schedule | Auto-close stale issues |

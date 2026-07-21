@@ -16,7 +16,7 @@ func TestFormatTableDetailObject(t *testing.T) {
 		"listSubnetIds": []interface{}{}, // empty nested array — must NOT blank the output
 	}
 	var buf bytes.Buffer
-	formatTable(data, &buf)
+	formatTable(data, &buf, false)
 	out := buf.String()
 
 	if strings.TrimSpace(out) == "" {
@@ -40,7 +40,7 @@ func TestFormatTableListResponse(t *testing.T) {
 		"total": float64(2),
 	}
 	var buf bytes.Buffer
-	formatTable(data, &buf)
+	formatTable(data, &buf, false)
 	out := buf.String()
 
 	for _, want := range []string{"id", "name", "c1", "alpha", "c2", "beta"} {
@@ -61,7 +61,7 @@ func TestFormatTableTopLevelArray(t *testing.T) {
 		map[string]interface{}{"uuid": "s2"},
 	}
 	var buf bytes.Buffer
-	formatTable(data, &buf)
+	formatTable(data, &buf, false)
 	out := buf.String()
 	for _, want := range []string{"uuid", "s1", "s2"} {
 		if !strings.Contains(out, want) {

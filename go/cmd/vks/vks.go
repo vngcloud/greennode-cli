@@ -8,8 +8,10 @@ import (
 // VksCmd is the parent command for all VKS subcommands.
 var VksCmd = &cobra.Command{
 	Use:   "vks",
-	Short: "VNG Kubernetes Service (VKS) commands",
+	Short: "GreenNode Kubernetes Service (VKS) commands",
 	Long:  "Manage VKS clusters, node groups, and related resources.",
+	// Reject unknown subcommands (nested groups don't error by default in cobra).
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -49,7 +51,6 @@ func init() {
 	VksCmd.AddCommand(listClusterVersionsCmd)
 	VksCmd.AddCommand(upgradeNodegroupVersionCmd)
 	VksCmd.AddCommand(getClusterEventsCmd)
-	VksCmd.AddCommand(getNodegroupEventsCmd)
 
 	// Kubeconfig commands
 	VksCmd.AddCommand(generateKubeconfigCmd)

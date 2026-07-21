@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -20,6 +21,7 @@ func init() {
 	f := generateKubeconfigCmd.Flags()
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.Int("expiration-days", 30, "Number of days until the kubeconfig expires")
+	f.Bool("dry-run", false, "Preview without requesting generation")
 
 	generateKubeconfigCmd.MarkFlagRequired("cluster-id")
 }
@@ -27,12 +29,18 @@ func init() {
 func runGenerateKubeconfig(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	expirationDays, _ := cmd.Flags().GetInt("expiration-days")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
 		return err
 	}
 
 	body := map[string]interface{}{"expirationDays": expirationDays}
+
+	if dryRun {
+		cli.PrintDryRun("generate", fmt.Sprintf("kubeconfig for cluster %s", clusterID), body)
+		return nil
+	}
 
 	apiClient, err := createClient(cmd)
 	if err != nil {

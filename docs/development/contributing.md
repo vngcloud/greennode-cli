@@ -24,7 +24,9 @@ go build -o grn .
 7. (Optional) Register flag value completion — see [Architecture](architecture.md#shell-completion)
 8. Document it: create `docs/commands/<service>/<command-name>.md`, add it to the
    command index table and to the `mkdocs.yml` nav
-9. Add a changelog fragment: `./scripts/new-change -t feature -c <service> -d "..."`
+
+The changelog/version are automated by release-please from your Conventional
+Commit PR title — no manual changelog step.
 
 ## Adding a new service
 

@@ -1,0 +1,46 @@
+package __PRODUCT__
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/validator"
+)
+
+// listExamplesCmd is a starter command showing the standard pattern:
+// read flags -> validate -> build client -> call API -> output.
+// Replace it with your real commands (follow the CLI conventions: verb-noun
+// names, --dry-run + --force on destructive commands, cli.ParseStructFlag for
+// struct-valued flags, validate IDs before interpolating into the URL).
+var listExamplesCmd = &cobra.Command{
+	Use:   "list-examples",
+	Short: "List example __PRODUCT__ resources (starter — replace me)",
+	RunE:  runListExamples,
+}
+
+func init() {
+	f := listExamplesCmd.Flags()
+	f.String("parent-id", "", "Parent resource ID (required)")
+	listExamplesCmd.MarkFlagRequired("parent-id")
+}
+
+func runListExamples(cmd *cobra.Command, args []string) error {
+	parentID, _ := cmd.Flags().GetString("parent-id")
+	if err := validator.ValidateID(parentID, "parent-id"); err != nil {
+		return err
+	}
+
+	apiClient, err := createClient(cmd)
+	if err != nil {
+		return err
+	}
+
+	result, err := apiClient.Get(fmt.Sprintf("/v1/parents/%s/examples", parentID), nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	return outputResult(cmd, result)
+}

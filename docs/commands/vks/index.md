@@ -1,6 +1,6 @@
 # VKS Commands
 
-VKS (VNG Kubernetes Service) commands for managing Kubernetes clusters and node groups.
+VKS (GreenNode Kubernetes Service) commands for managing Kubernetes clusters and node groups.
 
 ```bash
 grn vks <command> [options]
@@ -41,7 +41,7 @@ grn vks <command> [options]
 
 | Command | Description |
 |---------|-------------|
-| [set-auto-upgrade-config](set-auto-upgrade-config.md) | Configure auto-upgrade schedule for a cluster |
+| [config-auto-upgrade](config-auto-upgrade.md) | Configure auto-upgrade schedule for a cluster (alias: set-auto-upgrade-config) |
 | [delete-auto-upgrade-config](delete-auto-upgrade-config.md) | Delete auto-upgrade config for a cluster |
 
 ### Auto-Healing
@@ -55,7 +55,6 @@ grn vks <command> [options]
 | Command | Description |
 |---------|-------------|
 | [get-cluster-events](get-cluster-events.md) | Get the list of events for a cluster |
-| [get-nodegroup-events](get-nodegroup-events.md) | Get the list of events for a node group |
 
 ### Kubeconfig
 

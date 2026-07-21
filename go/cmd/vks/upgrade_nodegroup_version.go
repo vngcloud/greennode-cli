@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vngcloud/greennode-cli/internal/cli"
 	"github.com/vngcloud/greennode-cli/internal/validator"
 )
 
@@ -19,6 +20,7 @@ func init() {
 	f.String("cluster-id", "", "Cluster ID (required)")
 	f.String("nodegroup-id", "", "Node group ID (required)")
 	f.String("k8s-version", "", "Target Kubernetes version (required)")
+	f.Bool("dry-run", false, "Preview the upgrade without executing")
 
 	upgradeNodegroupVersionCmd.MarkFlagRequired("cluster-id")
 	upgradeNodegroupVersionCmd.MarkFlagRequired("nodegroup-id")
@@ -33,6 +35,7 @@ func runUpgradeNodegroupVersion(cmd *cobra.Command, args []string) error {
 	clusterID, _ := cmd.Flags().GetString("cluster-id")
 	nodegroupID, _ := cmd.Flags().GetString("nodegroup-id")
 	k8sVersion, _ := cmd.Flags().GetString("k8s-version")
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	if err := validator.ValidateID(clusterID, "cluster-id"); err != nil {
 		return err
@@ -42,6 +45,11 @@ func runUpgradeNodegroupVersion(cmd *cobra.Command, args []string) error {
 	}
 
 	body := buildUpgradeNodegroupBody(k8sVersion)
+
+	if dryRun {
+		cli.PrintDryRun("upgrade", fmt.Sprintf("node group %s", nodegroupID), body)
+		return nil
+	}
 
 	apiClient, err := createClient(cmd)
 	if err != nil {

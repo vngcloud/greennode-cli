@@ -2,9 +2,11 @@
 
 ## Description
 
-Update a node group's image, node count, security groups, labels, taints, auto-scaling configuration, and upgrade strategy. The image ID is always required by the API, even when the intent is to update only other fields.
+Update a node group's desired node count, security groups, auto-scaling configuration, and upgrade configuration. At least one of `--num-nodes`, `--security-groups`, `--auto-scale`, or `--upgrade-config` must be provided.
 
-Use `--dry-run` to preview the update payload without executing it.
+To update labels, tags, or taints, use [update-nodegroup-metadata](update-nodegroup-metadata.md) — those fields are deprecated on this command.
+
+Use `--dry-run` to preview the update payload without executing the request.
 
 ## Synopsis
 
@@ -12,59 +14,95 @@ Use `--dry-run` to preview the update payload without executing it.
 grn vks update-nodegroup
     --cluster-id <value>
     --nodegroup-id <value>
-    --image-id <value>
     [--num-nodes <value>]
     [--security-groups <value>]
-    [--labels <value>]
-    [--taints <value>]
-    [--auto-scale-min <value>]
-    [--auto-scale-max <value>]
-    [--upgrade-strategy <value>]
-    [--upgrade-max-surge <value>]
-    [--upgrade-max-unavailable <value>]
+    [--auto-scale <value>]
+    [--upgrade-config <value>]
     [--dry-run]
 ```
 
 ## Options
 
-`--cluster-id` (required)
-: ID of the cluster that owns the node group.
+**`--cluster-id`** (string)
 
-`--nodegroup-id` (required)
-: ID of the node group to update.
+ID of the cluster that owns the node group.
 
-`--image-id` (required)
-: OS image ID. Always required by the API — pass the current image ID to leave it unchanged.
+- Required: Yes
 
-`--num-nodes` (optional)
-: New desired number of nodes for the node group.
+**`--nodegroup-id`** (string)
 
-`--security-groups` (optional)
-: Comma-separated list of security group IDs to replace the current set.
+ID of the node group to update.
 
-`--labels` (optional)
-: Comma-separated `key=value` pairs to set as Kubernetes node labels (replaces existing labels).
+- Required: Yes
 
-`--taints` (optional)
-: Comma-separated node taints in `key=value:effect` format (replaces existing taints).
+**`--num-nodes`** (string)
 
-`--auto-scale-min` (optional)
-: Minimum number of nodes for the auto-scaler.
+New desired number of nodes. Parsed as an integer by the CLI.
 
-`--auto-scale-max` (optional)
-: Maximum number of nodes for the auto-scaler.
+- Required: Conditional — at least one of `--num-nodes`, `--security-groups`, `--auto-scale`, or `--upgrade-config` must be provided.
+- Constraints: 0–10. When `--auto-scale` is also set, must be within `[minSize, maxSize]`.
 
-`--upgrade-strategy` (optional)
-: Node upgrade strategy. Accepted value: `SURGE`.
+**`--security-groups`** (list&lt;string&gt;)
 
-`--upgrade-max-surge` (optional)
-: Maximum number of extra nodes to create during a surge upgrade.
+Security group IDs to replace the current set, comma-separated.
 
-`--upgrade-max-unavailable` (optional)
-: Maximum number of nodes that may be unavailable during an upgrade.
+- Required: Conditional — at least one update flag must be provided.
+- Constraints: 1–50 entries.
+- Syntax: `secg-aaa111,secg-bbb222`
 
-`--dry-run` (optional)
-: Print the update payload without sending the request.
+**`--auto-scale`** (structure)
+
+Auto-scaling configuration for the node group. Accepts shorthand or JSON.
+
+- Required: Conditional — at least one update flag must be provided.
+- Members:
+    - `minSize` (integer) — minimum number of nodes; minimum value `0`
+    - `maxSize` (integer) — maximum number of nodes; minimum value `1`
+
+Shorthand syntax:
+
+```
+minSize=2,maxSize=10
+```
+
+JSON syntax:
+
+```json
+{"minSize": 2, "maxSize": 10}
+```
+
+**`--upgrade-config`** (structure)
+
+Upgrade strategy configuration for the node group. Accepts shorthand or JSON.
+
+- Required: Conditional — at least one update flag must be provided.
+- Members:
+    - `strategy` (string) — upgrade strategy; currently only `SURGE` is supported
+    - `maxSurge` (integer) — maximum number of extra nodes added during upgrade; range 1–100
+    - `maxUnavailable` (integer) — maximum number of nodes that may be unavailable during upgrade; range 0–100
+
+Shorthand syntax:
+
+```
+maxSurge=1,maxUnavailable=0,strategy=SURGE
+```
+
+JSON syntax:
+
+```json
+{"maxSurge": 1, "maxUnavailable": 0, "strategy": "SURGE"}
+```
+
+**`--dry-run`** (boolean)
+
+Print the update payload without sending the request.
+
+- Required: No
+- Default: `false`
+
+## Global options
+
+This command also accepts the global options (`--profile`, `--region`, `--output`, `--query`, `--endpoint-url`, `--debug`, …).
 
 ## Examples
 
@@ -74,30 +112,25 @@ Scale a node group to 5 nodes:
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s \
   --num-nodes 5
 ```
 
-Update node image and set auto-scaling limits:
+Enable auto-scaling with min/max limits:
 
 ```bash
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s-v2 \
-  --auto-scale-min 2 \
-  --auto-scale-max 10
+  --auto-scale minSize=2,maxSize=10
 ```
 
-Update labels and taints:
+Set the upgrade configuration using JSON:
 
 ```bash
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s \
-  --labels env=prod,tier=app \
-  --taints dedicated=gpu:NoSchedule
+  --upgrade-config '{"maxSurge":2,"maxUnavailable":1,"strategy":"SURGE"}'
 ```
 
 Preview the update payload (dry run):
@@ -106,7 +139,6 @@ Preview the update payload (dry run):
 grn vks update-nodegroup \
   --cluster-id cls-abc12345-6789-def0-1234-abcdef012345 \
   --nodegroup-id ng-abc12345-6789-def0-1234-abcdef012345 \
-  --image-id img-ubuntu-22-04-k8s \
   --num-nodes 3 \
   --dry-run
 ```

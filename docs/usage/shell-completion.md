@@ -52,7 +52,7 @@ grn completion powershell | Out-String | Invoke-Expression
 Beyond commands and flags, `grn` completes flag *values*:
 
 - Global: `--region`, `--output`, `--color`, `--profile`
-- VKS: `--cluster-id`, `--nodegroup-id`, `--k8s-version`, `--image-id`, `--network-type`, `--release-channel`
+- VKS: `--cluster-id`, `--nodegroup-id`, `--k8s-version`, `--os`, `--network-type`, `--release-channel`
 - vserver resources used by VKS: `--vpc-id`, `--subnet-id`, `--ssh-key-id`, `--security-groups`, `--disk-type`
 
 Resource-id completions call the API using your configured credentials and

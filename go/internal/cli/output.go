@@ -25,5 +25,6 @@ func Output(cmd *cobra.Command, data interface{}) error {
 		output = "json"
 	}
 
-	return formatter.Format(data, output, query, os.Stdout)
+	colorMode, _ := cmd.Flags().GetString("color")
+	return formatter.FormatColor(data, output, query, os.Stdout, formatter.ColorEnabled(colorMode, os.Stdout))
 }

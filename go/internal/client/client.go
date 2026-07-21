@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -46,13 +47,21 @@ type GreenodeClient struct {
 	debug        bool
 }
 
-// NewGreenodeClient creates a new API client.
-func NewGreenodeClient(baseURL string, tokenManager *auth.TokenManager, timeout time.Duration, verifySSL bool, debug bool) *GreenodeClient {
-	if timeout == 0 {
-		timeout = defaultTimeout
+// NewGreenodeClient creates a new API client. connectTimeout bounds the TCP
+// connect and TLS handshake (the --cli-connect-timeout flag); readTimeout bounds
+// the overall request (the --cli-read-timeout flag). A zero readTimeout falls
+// back to the default; a zero connectTimeout means no explicit connect bound.
+func NewGreenodeClient(baseURL string, tokenManager *auth.TokenManager, connectTimeout, readTimeout time.Duration, verifySSL bool, debug bool) *GreenodeClient {
+	if readTimeout == 0 {
+		readTimeout = defaultTimeout
 	}
 
-	transport := &http.Transport{}
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{Timeout: connectTimeout}).DialContext,
+	}
+	if connectTimeout > 0 {
+		transport.TLSHandshakeTimeout = connectTimeout
+	}
 	if !verifySSL {
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
 	}
@@ -61,7 +70,7 @@ func NewGreenodeClient(baseURL string, tokenManager *auth.TokenManager, timeout 
 		baseURL:      baseURL,
 		tokenManager: tokenManager,
 		httpClient: &http.Client{
-			Timeout:   timeout,
+			Timeout:   readTimeout,
 			Transport: transport,
 		},
 		debug: debug,
@@ -200,7 +209,7 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 		if c.debug {
 			fmt.Fprintf(os.Stderr, "[debug] %s %s\n", method, fullURL)
 			if jsonBody != nil {
-				fmt.Fprintf(os.Stderr, "[debug] request body: %s\n", string(jsonBody))
+				fmt.Fprintf(os.Stderr, "[debug] request body: %s\n", redactDebugBody(string(jsonBody)))
 			}
 		}
 
@@ -219,7 +228,7 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 		resp.Body.Close()
 
 		if c.debug {
-			fmt.Fprintf(os.Stderr, "[debug] response %d: %s\n", resp.StatusCode, string(respBody))
+			fmt.Fprintf(os.Stderr, "[debug] response %d: %s\n", resp.StatusCode, redactDebugBody(string(respBody)))
 		}
 
 		// 401 — refresh token and retry once

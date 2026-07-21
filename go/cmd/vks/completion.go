@@ -48,31 +48,23 @@ func fetchK8sVersions(_ context.Context, cmd *cobra.Command) ([]string, error) {
 	return cli.ExtractIDs(res, "version", "name", "id"), nil
 }
 
-func fetchImageIDs(_ context.Context, cmd *cobra.Command) ([]string, error) {
-	c, err := createClient(cmd)
-	if err != nil {
-		return nil, err
-	}
-	res, err := c.Get("/v1/node-group-images", nil)
-	if err != nil {
-		return nil, err
-	}
-	return cli.ExtractIDs(res, "id", "name"), nil
-}
-
 func flagCompleters() map[string]cli.CompFunc {
 	return map[string]cli.CompFunc{
-		"cluster-id":      cli.FlagFromAPI(fetchClusterIDs),
-		"nodegroup-id":    cli.FlagFromAPI(fetchNodegroupIDs),
-		"k8s-version":     cli.FlagFromAPI(fetchK8sVersions),
-		"image-id":        cli.FlagFromAPI(fetchImageIDs),
-		"network-type":    cli.FlagValues("CALICO", "CILIUM_OVERLAY", "CILIUM_NATIVE_ROUTING"),
-		"release-channel": cli.FlagValues("RAPID", "STABLE"),
-		"vpc-id":          cli.ResourceCompletion("vserver:network"),
-		"subnet-id":       cli.ResourceCompletion("vserver:subnet"),
-		"ssh-key-id":      cli.ResourceCompletion("vserver:sshkey"),
-		"security-groups": cli.ResourceCompletion("vserver:secgroup"),
-		"disk-type":       cli.ResourceCompletion("vserver:volumetype"),
+		"cluster-id":             cli.FlagFromAPI(fetchClusterIDs),
+		"nodegroup-id":           cli.FlagFromAPI(fetchNodegroupIDs),
+		"k8s-version":            cli.FlagFromAPI(fetchK8sVersions),
+		"os":                     cli.FlagValues("ubuntu", "linux", "rocky"),
+		"network-type":           cli.FlagValues("TIGERA", "CILIUM_OVERLAY", "CILIUM_NATIVE_ROUTING"),
+		"release-channel":        cli.FlagValues("RAPID", "STABLE"),
+		"private-cluster":        cli.FlagValues("enabled", "disabled"),
+		"private-nodes":          cli.FlagValues("enabled", "disabled"),
+		"load-balancer-plugin":   cli.FlagValues("enabled", "disabled"),
+		"block-store-csi-plugin": cli.FlagValues("enabled", "disabled"),
+		"vpc-id":                 cli.ResourceCompletion("vserver:network"),
+		"subnet-id":              cli.ResourceCompletion("vserver:subnet"),
+		"ssh-key-id":             cli.ResourceCompletion("vserver:sshkey"),
+		"security-groups":        cli.ResourceCompletion("vserver:secgroup"),
+		"disk-type":              cli.ResourceCompletion("vserver:volumetype"),
 	}
 }
 
