@@ -39,19 +39,25 @@ var retryableStatusCodes = map[int]bool{
 	500: true, 502: true, 503: true, 504: true,
 }
 
-// GreenodeClient is an HTTP client for Greenode APIs with retry and auto token refresh.
-type GreenodeClient struct {
+// UserAgent is the User-Agent header sent on every VKS API request so the
+// backend can attribute traffic to the grn VKS CLI. cmd overrides it at startup
+// with the release version (e.g. "grn-vks-cli/1.7.3"); the version-less default
+// keeps identification intact if that override is ever skipped (e.g. in tests).
+var UserAgent = "grn-vks-cli"
+
+// GreennodeClient is an HTTP client for Greennode APIs with retry and auto token refresh.
+type GreennodeClient struct {
 	baseURL      string
 	tokenManager *auth.TokenManager
 	httpClient   *http.Client
 	debug        bool
 }
 
-// NewGreenodeClient creates a new API client. connectTimeout bounds the TCP
+// NewGreennodeClient creates a new API client. connectTimeout bounds the TCP
 // connect and TLS handshake (the --cli-connect-timeout flag); readTimeout bounds
 // the overall request (the --cli-read-timeout flag). A zero readTimeout falls
 // back to the default; a zero connectTimeout means no explicit connect bound.
-func NewGreenodeClient(baseURL string, tokenManager *auth.TokenManager, connectTimeout, readTimeout time.Duration, verifySSL bool, debug bool) *GreenodeClient {
+func NewGreennodeClient(baseURL string, tokenManager *auth.TokenManager, connectTimeout, readTimeout time.Duration, verifySSL bool, debug bool) *GreennodeClient {
 	if readTimeout == 0 {
 		readTimeout = defaultTimeout
 	}
@@ -66,7 +72,7 @@ func NewGreenodeClient(baseURL string, tokenManager *auth.TokenManager, connectT
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
 	}
 
-	return &GreenodeClient{
+	return &GreennodeClient{
 		baseURL:      baseURL,
 		tokenManager: tokenManager,
 		httpClient: &http.Client{
@@ -78,37 +84,37 @@ func NewGreenodeClient(baseURL string, tokenManager *auth.TokenManager, connectT
 }
 
 // Get performs a GET request.
-func (c *GreenodeClient) Get(path string, params map[string]string) (interface{}, error) {
+func (c *GreennodeClient) Get(path string, params map[string]string) (interface{}, error) {
 	return c.request("GET", path, params, nil)
 }
 
 // Post performs a POST request with a JSON body.
-func (c *GreenodeClient) Post(path string, body interface{}) (interface{}, error) {
+func (c *GreennodeClient) Post(path string, body interface{}) (interface{}, error) {
 	return c.request("POST", path, nil, body)
 }
 
 // Put performs a PUT request with a JSON body.
-func (c *GreenodeClient) Put(path string, body interface{}) (interface{}, error) {
+func (c *GreennodeClient) Put(path string, body interface{}) (interface{}, error) {
 	return c.request("PUT", path, nil, body)
 }
 
 // Patch performs a PATCH request with a JSON body.
-func (c *GreenodeClient) Patch(path string, body interface{}) (interface{}, error) {
+func (c *GreennodeClient) Patch(path string, body interface{}) (interface{}, error) {
 	return c.request("PATCH", path, nil, body)
 }
 
 // Delete performs a DELETE request.
-func (c *GreenodeClient) Delete(path string, params map[string]string) (interface{}, error) {
+func (c *GreennodeClient) Delete(path string, params map[string]string) (interface{}, error) {
 	return c.request("DELETE", path, params, nil)
 }
 
 // GetRaw performs a GET request and returns the raw response body.
-func (c *GreenodeClient) GetRaw(path string, params map[string]string) (string, error) {
+func (c *GreennodeClient) GetRaw(path string, params map[string]string) (string, error) {
 	return c.requestRaw("GET", path, params, nil)
 }
 
 // GetAllPages fetches all pages and merges items into a single result.
-func (c *GreenodeClient) GetAllPages(path string, pageSize int) (map[string]interface{}, error) {
+func (c *GreennodeClient) GetAllPages(path string, pageSize int) (map[string]interface{}, error) {
 	if pageSize == 0 {
 		pageSize = 50
 	}
@@ -147,7 +153,7 @@ func (c *GreenodeClient) GetAllPages(path string, pageSize int) (map[string]inte
 	}, nil
 }
 
-func (c *GreenodeClient) request(method, path string, params map[string]string, body interface{}) (interface{}, error) {
+func (c *GreennodeClient) request(method, path string, params map[string]string, body interface{}) (interface{}, error) {
 	rawBody, err := c.requestRaw(method, path, params, body)
 	if err != nil {
 		return nil, err
@@ -164,7 +170,7 @@ func (c *GreenodeClient) request(method, path string, params map[string]string, 
 	return result, nil
 }
 
-func (c *GreenodeClient) requestRaw(method, path string, params map[string]string, body interface{}) (string, error) {
+func (c *GreennodeClient) requestRaw(method, path string, params map[string]string, body interface{}) (string, error) {
 	fullURL := c.baseURL + path
 
 	if len(params) > 0 {
@@ -205,6 +211,7 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 
 		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", UserAgent)
 
 		if c.debug {
 			fmt.Fprintf(os.Stderr, "[debug] %s %s\n", method, fullURL)
@@ -245,6 +252,7 @@ func (c *GreenodeClient) requestRaw(method, path string, params map[string]strin
 			req2, _ := http.NewRequest(method, fullURL, retryBody)
 			req2.Header.Set("Authorization", "Bearer "+token)
 			req2.Header.Set("Content-Type", "application/json")
+			req2.Header.Set("User-Agent", UserAgent)
 			resp2, err := c.httpClient.Do(req2)
 			if err != nil {
 				return "", err
@@ -327,6 +335,6 @@ func formatError(statusCode int, body []byte) string {
 	return fmt.Sprintf("API error (HTTP %d %s)", statusCode, statusText)
 }
 
-func (c *GreenodeClient) DeleteWithBody(path string, body interface{}) (interface{}, error) {
+func (c *GreennodeClient) DeleteWithBody(path string, body interface{}) (interface{}, error) {
 	return c.request("DELETE", path, nil, body)
 }

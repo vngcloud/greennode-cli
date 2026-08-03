@@ -8,10 +8,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vngcloud/greennode-cli/cmd/configure"
 	"github.com/vngcloud/greennode-cli/internal/cli"
+	"github.com/vngcloud/greennode-cli/internal/client"
 	"github.com/vngcloud/greennode-cli/internal/config"
 )
 
-const cliVersion = "1.7.2" // x-release-please-version
+const cliVersion = "1.8.0" // x-release-please-version
 
 // Global flags
 var (
@@ -61,7 +62,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&Query, "query", "", "JMESPath query to filter output")
 	rootCmd.PersistentFlags().StringVar(&EndpointURL, "endpoint-url", "", "Override the service endpoint URL")
 	rootCmd.PersistentFlags().BoolVar(&NoVerifySSL, "no-verify-ssl", false, "Disable SSL certificate verification")
-	rootCmd.PersistentFlags().BoolVar(&AllowUntrusted, "allow-untrusted-endpoint", false, "Allow --endpoint-url to a host outside vngcloud.vn/greenode.ai without TLS protection (sends a bearer token there)")
+	rootCmd.PersistentFlags().BoolVar(&AllowUntrusted, "allow-untrusted-endpoint", false, "Allow --endpoint-url to a host outside vngcloud.vn/greennode.ai without TLS protection (sends a bearer token there)")
 	rootCmd.PersistentFlags().BoolVar(&Debug, "debug", false, "Enable debug logging")
 	rootCmd.PersistentFlags().IntVar(&CLIReadTimeout, "cli-read-timeout", 30, "HTTP read timeout in seconds")
 	rootCmd.PersistentFlags().IntVar(&CLIConnectTimeout, "cli-connect-timeout", 30, "HTTP connect timeout in seconds")
@@ -73,6 +74,10 @@ func init() {
 	_ = rootCmd.RegisterFlagCompletionFunc("color", cli.FlagValues("on", "off", "auto"))
 
 	rootCmd.SetVersionTemplate("grn-cli/{{.Version}}\n")
+
+	// Tag every VKS API request with a version-stamped User-Agent so the backend
+	// can attribute traffic to the grn VKS CLI. Shares cliVersion with --version.
+	client.UserAgent = "grn-vks-cli/" + cliVersion
 
 	rootCmd.AddCommand(configure.ConfigureCmd)
 	for _, svc := range cli.Services() {
